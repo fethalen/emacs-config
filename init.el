@@ -2,6 +2,22 @@
 
 ;;; Packages
 
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name
+        "straight/repos/straight.el/bootstrap.el"
+        (or (bound-and-true-p straight-base-dir)
+            user-emacs-directory)))
+      (bootstrap-version 7))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
 (require 'package)
 
 (package-initialize)
@@ -12,7 +28,6 @@
     cider
     counsel
     doom-themes
-    eat
     elpy
     exec-path-from-shell
     expand-region
@@ -55,7 +70,6 @@
 
 (tool-bar-mode -1)                      ; Disable tool bar
 (menu-bar-mode t)                       ; Display a drawer-style menu bar
-(global-hl-line-mode t)                 ; Highlight current line
 (show-paren-mode 1)                     ; Highlight matching delimiters
 (electric-pair-mode t)                  ; Automatically close delimiters
 (defalias 'yes-or-no-p 'y-or-n-p)       ; 'y' and 'n' instead of 'yes' and 'no'
@@ -111,11 +125,23 @@
   "Clear existing theme instead of layering them."
   (mapc #'disable-theme custom-enabled-themes))
 
-;; Source additional themes.
-(add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
+(straight-use-package
+ '(rose-pine-doom-emacs
+    :host github
+    :repo "donniebreve/rose-pine-doom-emacs"
+    :branch "main"))
 
-;; Load custom theme.
-(load-theme 'doom-rose-pine-dawn t)
+(add-to-list 'custom-theme-load-path
+             (straight--build-dir "rose-pine-doom-emacs"))
+
+(defun my/apply-theme (appearance)
+  "Load theme, taking current system appearance into consideration."
+  (mapc #'disable-theme custom-enabled-themes)
+  (pcase appearance
+    ('light (load-theme 'doom-rose-pine-dawn t))
+    ('dark (load-theme 'doom-rose-pine t))))
+
+(add-hook 'ns-system-appearance-change-functions #'my/apply-theme)
 
 ;; Auto complete commands.
 (smex-initialize)
@@ -174,6 +200,8 @@
   ;; (setq display-line-numbers 'relative)
   ;; Display an indiciation of the ‘fill-column’ position
   ;; (display-fill-column-indicator-mode)
+  ;; Highlight the current line
+  (hl-line-mode)
   ;; Show, in the echo area, the argument list of the function call you are
   ;; currently writing.
   (eldoc-mode 1))
@@ -236,14 +264,6 @@
 ;; (setq-default ispell-dictionary "american"
 ;;               ispell-local-dictionary "american")
 
-;; Show line numbers in AUXTeX.
-(add-hook 'tex-mode-hook 'display-line-numbers-mode)
-(add-hook 'LaTeX-mode-hook 'display-line-numbers-mode)
-(add-hook 'bibtex-mode-hook 'display-line-numbers-mode)
-
-;; Show line numbers in shell-script-mode.
-(add-hook 'sh-mode-hook 'display-line-numbers-mode)
-
 ;; When non-nil, display available key-bindings on combined keypresses.
 (guide-key-mode 1)
 
@@ -253,17 +273,114 @@
 (with-eval-after-load 'poly-org)
 
 ;; Terminal emulation
-(use-package eat
-  :ensure t
-  :config
-  (setq eat-term-name "xterm-256color"))
+(straight-use-package
+ '(eat :type git
+       :host codeberg
+       :repo "akib/emacs-eat"
+       :files ("*.el"
+               ("term" "term/*.el")
+               "*.texi"
+               "*.ti"
+               ("terminfo/e" "terminfo/e/*")
+               ("terminfo/65" "terminfo/65/*")
+               ("integration" "integration/*")
+               (:exclude ".dir-locals.el" "*-tests.el"))))
+
+(with-eval-after-load 'eat
+  (setq eat-term-name "xterm-256color")
+  (setq eat-enable-mouse t))
 
 ;; R modes
 (add-to-list 'auto-mode-alist '("\\.Snw" . poly-noweb+r-mode))
 (add-to-list 'auto-mode-alist '("\\.Rnw" . poly-noweb+r-mode))
 (add-to-list 'auto-mode-alist '("\\.Rmd" . poly-markdown+r-mode))
 
-;; Julia setup
+;;; Python
+
+;; Tree-sitter auto management
+(use-package treesit-auto
+  :straight t
+  :config
+  (setq treesit-auto-install 'prompt)
+  (treesit-auto-add-to-auto-mode-alist 'python)
+  (global-treesit-auto-mode))
+
+;; Python major mode (built into Emacs 29+)
+(use-package python-ts-mode
+  :straight (:type built-in)
+  :mode "\\.py\\'"
+  :hook (python-ts-mode . eglot-ensure))
+
+;; Eglot setup
+(use-package eglot
+  :straight (:type built-in)
+  :config
+  ;; Point Eglot to pyright
+  (add-to-list 'eglot-server-programs
+               `(python-ts-mode . ("pyright-langserver" "--stdio"))))
+
+;; Conda integration
+(use-package conda
+  :straight t
+  :config
+  (setq conda-anaconda-home (expand-file-name "~/miniconda3/"))
+  (setq conda-env-home-directory conda-anaconda-home)
+  (setq conda-env-subdirectory "envs")
+  (defun my-python-auto-conda-env ()
+    (let* ((env-file (locate-dominating-file default-directory ".conda-env")))
+      (when env-file
+        (let ((env-name (string-trim
+                         (with-temp-buffer
+                           (insert-file-contents (expand-file-name ".conda-env" env-file))
+                           (buffer-string)))))
+          (conda-env-activate env-name)
+          (message "Activated Conda env: %s" env-name)))))
+  (add-hook 'python-ts-mode-hook #'my-python-auto-conda-env))
+
+;; Completion
+(use-package company
+  :straight t
+  :hook (after-init . global-company-mode)
+  :config
+  (setq company-idle-delay 0.1
+        company-minimum-prefix-length 1))
+
+;; Version management
+(use-package pyvenv
+  :straight t
+  :config
+  ;; Automatically activate a virtualenv if .venv exists in project root
+  (add-hook 'python-ts-mode-hook
+            (lambda ()
+              (let ((venv-path (locate-dominating-file default-directory ".venv")))
+                (when venv-path
+                  (pyvenv-activate (expand-file-name ".venv" venv-path))
+                  (message "Activated venv: %s" (expand-file-name ".venv"
+                                                                  venv-path)))))))
+
+;; --- Black auto-format on save ---
+(use-package blacken
+  :straight t
+  :hook (python-ts-mode . blacken-mode)
+  :config
+  (setq blacken-line-length 88))
+
+;; --- Ruff linting via Flymake ---
+(use-package flymake-ruff
+  :straight (flymake-ruff :type git :host github :repo "erickgnavar/flymake-ruff")
+  :hook (python-ts-mode . flymake-ruff-load))
+
+;; Debugging
+(use-package dap-mode
+  :straight t
+  :after python-ts-mode
+  :config
+  (require 'dap-python)
+  (setq dap-python-debugger 'debugpy)
+  (setq dap-python-executable "python"))
+
+;;; Julia
+
 (use-package julia-ts-mode
   :ensure t
   :mode "\\.jl$"
@@ -283,7 +400,8 @@
   :config
   (setq julia-snail-terminal-type 'eat))
 
-;; Lisp modes.
+;;; Lisp
+
 (defun my-lisp-hook ()
   "Minor modes that should be loaded in various Lisp modes."
   ;; Highlight parentheses, brackets or braces according to their depth.
