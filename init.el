@@ -98,7 +98,9 @@
 
 ;;; GUI
 
-(when window-system
+;; Only run on startup.
+(when (and window-system
+           (not after-init-time))
   (set-frame-size
    (selected-frame) 110 43)             ; Frame size
   (set-frame-font "Lilex Nerd Font-12") ; Font and font size
@@ -150,17 +152,6 @@
 ;; Old M-x.
 (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
 
-(defun my/show-line-numbers-while-goto-line ()
-  "Show line numbers temporarily, while prompting for the line number input"
-  (interactive)
-  (unwind-protect
-      (progn
-        (display-line-numbers-mode 1)
-        (call-interactively #'goto-line))
-    (display-line-numbers-mode -1)))
-
-(global-set-key (kbd "M-g g") #'my/show-line-numbers-while-goto-line)
-
 (use-package expand-region
   :bind ("C-=" . er/expand-region))
 
@@ -193,21 +184,32 @@
 (add-hook 'org-mode-hook 'my-org-hook)
 
 (defun my-prog-mode-hooks ()
-  "Minor modes used for all programming modes."
-  ;; Show line numbers.
+  "Settings applied to all programming modes."
+  ;; Show line numbers
   ;; (display-line-numbers-mode)
-  ;; Display relative line numbers.
+  ;; Display relative line numbers
   ;; (setq display-line-numbers 'relative)
   ;; Display an indiciation of the ‘fill-column’ position
   ;; (display-fill-column-indicator-mode)
-  ;; Highlight the current line
+  ;; Highlight current line
   (hl-line-mode)
+  ;; Show indicator for empty lines at the end of the buffer
+  (setq indicate-empty-lines t)
   ;; Show, in the echo area, the argument list of the function call you are
   ;; currently writing.
   (eldoc-mode 1))
 
 ;;; Programming modes
 (add-hook 'prog-mode-hook 'my-prog-mode-hooks)
+
+(defun my/text-mode-hooks ()
+  "Settings applied to text-centric modes (e.g., Org, Markdown, plain-text)."
+  ;; Highlight current line
+  (hl-line-mode)
+  ;; Show indicator for empty lines at the end of the buffer
+  (setq indicate-empty-lines t))
+
+(add-hook 'text-mode-hook 'my/text-mode-hooks)
 
 ;; Provide suggestions when opening files or switching buffers.
 (setq ido-enable-flex-matching t)
@@ -288,7 +290,15 @@
 
 (with-eval-after-load 'eat
   (setq eat-term-name "xterm-256color")
-  (setq eat-enable-mouse t))
+  (setq eat-enable-mouse t)
+  (setq eat-scroll-to-bottom-on-output 'this)
+  ;; Keep prompt at bottom like a normal terminal
+  (add-hook 'eat-mode-hook
+            (lambda ()
+              (setq-local scroll-conservatively 1000)
+              (setq-local scroll-step 1)
+              (setq-local scroll-margin 0)
+              (setq-local auto-window-vscroll nil))))
 
 ;; R modes
 (add-to-list 'auto-mode-alist '("\\.Snw" . poly-noweb+r-mode))
@@ -317,25 +327,16 @@
   :config
   ;; Point Eglot to pyright
   (add-to-list 'eglot-server-programs
-               `(python-ts-mode . ("pyright-langserver" "--stdio"))))
+               `(python-ts-mode . ("pyright-langserver" "-m" "pyright" "--stdio"))))
 
 ;; Conda integration
 (use-package conda
   :straight t
   :config
-  (setq conda-anaconda-home (expand-file-name "~/miniconda3/"))
+  (setq conda-anaconda-home (expand-file-name "~/opt/homebrew/Caskroom/miniconda/"))
   (setq conda-env-home-directory conda-anaconda-home)
   (setq conda-env-subdirectory "envs")
-  (defun my-python-auto-conda-env ()
-    (let* ((env-file (locate-dominating-file default-directory ".conda-env")))
-      (when env-file
-        (let ((env-name (string-trim
-                         (with-temp-buffer
-                           (insert-file-contents (expand-file-name ".conda-env" env-file))
-                           (buffer-string)))))
-          (conda-env-activate env-name)
-          (message "Activated Conda env: %s" env-name)))))
-  (add-hook 'python-ts-mode-hook #'my-python-auto-conda-env))
+  (conda-env-autoactivate-mode t))
 
 ;; Completion
 (use-package company
@@ -347,7 +348,7 @@
 
 ;; Version management
 (use-package pyvenv
-  :straight t
+  :ensure t
   :config
   ;; Automatically activate a virtualenv if .venv exists in project root
   (add-hook 'python-ts-mode-hook
@@ -358,21 +359,21 @@
                   (message "Activated venv: %s" (expand-file-name ".venv"
                                                                   venv-path)))))))
 
-;; --- Black auto-format on save ---
+;; Black auto-format on save
 (use-package blacken
-  :straight t
+  :ensure t
   :hook (python-ts-mode . blacken-mode)
   :config
   (setq blacken-line-length 88))
 
-;; --- Ruff linting via Flymake ---
+;; Ruff linting via Flymake
 (use-package flymake-ruff
   :straight (flymake-ruff :type git :host github :repo "erickgnavar/flymake-ruff")
   :hook (python-ts-mode . flymake-ruff-load))
 
 ;; Debugging
 (use-package dap-mode
-  :straight t
+  :ensure t
   :after python-ts-mode
   :config
   (require 'dap-python)
@@ -409,12 +410,12 @@
   (paredit-mode 1)
   (eldoc-mode 1))
 
-;; Geiser-specifics
+;; Geiser
 (defvar geiser-mit-binary "/usr/local/bin/mit-scheme")
 (defvar geiser-active-implementations '(mit))
 (add-hook 'geiser-repl-mode-hook 'rainbow-delimiters-mode)
 
-;; Slime-specifics
+;; Slime
 (setq-default inferior-lisp-program "/usr/local/bin/sbcl")
 
 ;; Clojure
