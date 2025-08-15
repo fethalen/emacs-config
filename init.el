@@ -23,29 +23,35 @@
 (package-initialize)
 
 (setq package-selected-packages
-  '(auctex
-    avy
-    cider
-    counsel
-    doom-themes
-    elpy
-    exec-path-from-shell
-    expand-region
-    flycheck
-    geiser
-    guide-key
-    ivy
-    julia-ts-mode
-    julia-snail
-    magit
-    markdown-mode
-    paredit
-    poly-org
-    polymode
-    smex
-    swiper
-    which-key
-    rainbow-delimiters))
+      '(auctex
+        avy
+        cider
+        consult
+        doom-themes
+        elpy
+        embark
+        embark-consult
+        exec-path-from-shell
+        expand-region
+        flycheck
+        geiser
+        guide-key
+        ivy
+        julia-ts-mode
+        julia-snail
+        magit
+        marginalia
+        markdown-mode
+        orderless
+        paredit
+        poly-org
+        polymode
+        savehist
+        smex
+        swiper
+        vertico
+        which-key
+        rainbow-delimiters))
 
 (setq package-archives
       '(("melpa" . "https://melpa.org/packages/")
@@ -211,44 +217,79 @@
 
 (add-hook 'text-mode-hook 'my/text-mode-hooks)
 
-;; Provide suggestions when opening files or switching buffers.
-(setq ido-enable-flex-matching t)
-(setq ido-everywhere t)
-(ido-mode 1)
-
 ;; Display available keybindings in a popup.
 (use-package which-key
   :ensure t
   :config
   (which-key-mode))
 
-;; Avy configuration.
-(global-set-key (kbd "C-:") 'avy-goto-char)
-(global-set-key (kbd "C-'") 'avy-goto-char-2)
-(global-set-key (kbd "M-g f") 'avy-goto-line)
-(global-set-key (kbd "M-g w") 'avy-goto-word-1)
-(global-set-key (kbd "M-g e") 'avy-goto-word-0)
+;; Avy - quick jump to anything
+(use-package avy
+  :ensure t
+  :bind
+  (("C-:"   . avy-goto-char)              ;; jump to char
+   ("C-'"   . avy-goto-char-2)            ;; jump to two-char sequence
+   ("M-g w" . avy-goto-word-1)            ;; jump to word start
+   ("M-g l" . avy-goto-line)              ;; jump to line
+   ("M-g e" . avy-goto-end-of-line)       ;; jump to end of line
+   ("M-g r" . avy-resume)                 ;; resume last avy command
+   ("M-g SPC" . avy-goto-whitespace-end)) ;; jump to whitespace end
+  :config
+  (setq avy-background t           ;; dim background during selection
+        avy-style 'at              ;; show key before target
+        avy-all-windows t          ;; search across all visible windows
+        avy-case-fold-search nil)) ;; be case-sensitive if needed
 
-;; Ivy configuration.
-(ivy-mode 1)
-(setq-default ivy-use-virtual-buffers t)
-(setq-default enable-recursive-minibuffers t)
-(global-set-key "\C-s" 'swiper)
-(global-set-key (kbd "C-c C-r") 'ivy-resume)
-(global-set-key (kbd "<f6>") 'ivy-resume)
-(global-set-key (kbd "M-x") 'counsel-M-x)
-(global-set-key (kbd "C-x C-f") 'counsel-find-file)
-(global-set-key (kbd "<f1> f") 'counsel-describe-function)
-(global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-(global-set-key (kbd "<f1> l") 'counsel-find-library)
-(global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-(global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-(global-set-key (kbd "C-c g") 'counsel-git)
-(global-set-key (kbd "C-c j") 'counsel-git-grep)
-(global-set-key (kbd "C-c k") 'counsel-ag)
-(global-set-key (kbd "C-x l") 'counsel-locate)
-(global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
-(define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
+;; Modern M-x replacement with Vertico stack
+
+;; Completion UI
+(use-package vertico
+  :ensure t
+  :init (vertico-mode))
+
+;; Flexible matching
+(use-package orderless
+  :ensure t
+  :init
+  (setq completion-styles '(orderless)
+        completion-category-defaults nil
+        completion-category-overrides
+        '((file (styles partial-completion)))))
+
+;; Annotations in minibuffer
+(use-package marginalia
+  :ensure t
+  :init (marginalia-mode))
+
+;; Commands & enhanced navigation
+(use-package consult
+  :ensure t
+  :bind (("M-x"              . execute-extended-command) ; old M-x feel
+         ("M-X"              . consult-mode-command)     ; major-mode commands
+         ("C-c C-c M-x"      . execute-extended-command) ; match smex fallback
+         ("C-x b"            . consult-buffer)
+         ("C-s"              . consult-line)))
+
+;; Context actions
+(use-package embark
+  :ensure t
+  :bind (("C-." . embark-act)
+         ("C-;" . embark-dwim))
+  :init (setq prefix-help-command #'embark-prefix-help-command))
+
+;; Embark + Consult integration
+(use-package embark-consult
+  :after (embark consult)
+  :ensure t
+  :hook (embark-collect-mode . consult-preview-at-point-mode))
+
+;; Persist minibuffer history across sessions
+(use-package savehist
+  :init
+  (setq history-length 1000
+        history-delete-duplicates t
+        savehist-additional-variables '(extended-command-history))
+  (savehist-mode 1))
 
 ;; Load markdown-mode.
 (autoload 'gfm-mode "markdown-mode.el" "Major mode for editing Markdown files" t)
