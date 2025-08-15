@@ -135,9 +135,9 @@
 
 (straight-use-package
  '(rose-pine-doom-emacs
-    :host github
-    :repo "donniebreve/rose-pine-doom-emacs"
-    :branch "main"))
+   :host github :repo
+   "donniebreve/rose-pine-doom-emacs"
+   :branch "main"))
 
 (add-to-list 'custom-theme-load-path
              (straight--build-dir "rose-pine-doom-emacs"))
@@ -268,7 +268,9 @@
          ("M-X"              . consult-mode-command)     ; major-mode commands
          ("C-c C-c M-x"      . execute-extended-command) ; match smex fallback
          ("C-x b"            . consult-buffer)
-         ("C-s"              . consult-line)))
+         ("C-s"              . consult-line)
+         ("C-x p b" . consult-project-buffer)
+         ("C-x p f" . project-find-file)))
 
 ;; Context actions
 (use-package embark
@@ -291,12 +293,14 @@
         savehist-additional-variables '(extended-command-history))
   (savehist-mode 1))
 
-;; Load markdown-mode.
-(autoload 'gfm-mode "markdown-mode.el" "Major mode for editing Markdown files" t)
-(add-to-list 'auto-mode-alist '("\\.md$" . markdown-mode))
-(setq auto-mode-alist (cons '("\\.text$" . gfm-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.md$" . markdown-mode) auto-mode-alist))
-(setq auto-mode-alist (cons '("\\.markdown$" . markdown-mode) auto-mode-alist))
+;; Markdown & GitHub Flavored Markdown
+(use-package markdown-mode
+  :ensure t
+  :mode (("\\.md\\'"       . gfm-mode)
+         ("\\.markdown\\'" . markdown-mode)
+         ("\\.text\\'"     . gfm-mode))
+  :init
+  (autoload 'gfm-mode "markdown-mode" "Major mode for editing GitHub Flavored Markdown" t))
 
 ;; ;; Disable Checkdoc warnings when editing Emacs Lisp files
 ;; (with-eval-after-load 'flycheck
@@ -484,3 +488,18 @@
 (add-hook 'scheme-mode-hook #'my-lisp-hook)
 
 ;;; init.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-vc-selected-packages
+   '((rose-pine-doom-emacs :url
+                           "https://github.com/donniebreve/rose-pine-doom-emacs"
+                           :branch "main"))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
