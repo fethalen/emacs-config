@@ -25,8 +25,10 @@
 (setq package-selected-packages
       '(auctex
         avy
+        cape
         cider
         consult
+        corfu
         doom-themes
         elpy
         embark
@@ -240,8 +242,6 @@
         avy-all-windows t          ;; search across all visible windows
         avy-case-fold-search nil)) ;; be case-sensitive if needed
 
-;; Modern M-x replacement with Vertico stack
-
 ;; Completion UI
 (use-package vertico
   :ensure t
@@ -315,9 +315,16 @@
 (guide-key-mode 1)
 
 ;; Enable Polymode.
-(with-eval-after-load 'poly-R)
-(with-eval-after-load 'poly-markdown)
-(with-eval-after-load 'poly-org)
+
+(use-package poly-R
+  :ensure t
+  :mode ("\\.Rmd\\'" . poly-markdown+r-mode))
+
+(use-package poly-markdown
+  :ensure t)
+
+(use-package poly-org
+  :ensure t)
 
 ;; Terminal emulation
 (straight-use-package
@@ -349,6 +356,43 @@
 (add-to-list 'auto-mode-alist '("\\.Snw" . poly-noweb+r-mode))
 (add-to-list 'auto-mode-alist '("\\.Rnw" . poly-noweb+r-mode))
 (add-to-list 'auto-mode-alist '("\\.Rmd" . poly-markdown+r-mode))
+
+;; Treemacs core
+(use-package treemacs
+  :ensure t
+  :defer t
+  :init
+  ;; Toggle with C-x t t
+  (with-eval-after-load 'project
+    (define-key project-prefix-map (kbd "t") #'treemacs))
+  :config
+  (setq treemacs-width 50
+        treemacs-follow-after-init t
+        treemacs-collapse-dirs 3
+        treemacs-silent-refresh t
+        treemacs-is-never-other-window t
+        treemacs-sorting 'alphabetic-asc
+        treemacs-no-png-images t) ;; for terminal support
+  ;; Expand automatically
+  (treemacs-follow-mode t)
+  (treemacs-filewatch-mode t))
+
+;; Magit integration
+(use-package treemacs-magit
+  :after (treemacs magit)
+  :ensure t)
+
+(use-package all-the-icons
+  :if (display-graphic-p)
+  :ensure t)
+
+;; Treemacs icons
+(use-package treemacs-all-the-icons
+  :after treemacs
+  :if (display-graphic-p)
+  :ensure t
+  :config
+  (treemacs-load-theme "all-the-icons"))
 
 ;;; Python
 
@@ -384,12 +428,28 @@
   (conda-env-autoactivate-mode t))
 
 ;; Completion
-(use-package company
-  :straight t
-  :hook (after-init . global-company-mode)
-  :config
-  (setq company-idle-delay 0.1
-        company-minimum-prefix-length 1))
+(use-package corfu
+  :ensure t
+  :init
+  (global-corfu-mode) ;; enable Corfu globally
+
+  ;; Optional settings
+  (setq corfu-auto t)         ;; auto-complete without M-TAB
+  (setq corfu-auto-delay 0.0) ;; no delay
+  (setq corfu-auto-prefix 1)  ;; start after 1 char
+  (setq corfu-quit-no-match 'separator)
+  (setq corfu-preview-current nil) ;; don't preselect
+  (setq corfu-cycle t)             ;; cycle through candidates
+  )
+
+;; Extra completion sources
+(use-package cape
+  :ensure t
+  :init
+  ;; Add useful default completion sources
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-keyword))
 
 ;; Version management
 (use-package pyvenv
@@ -488,18 +548,3 @@
 (add-hook 'scheme-mode-hook #'my-lisp-hook)
 
 ;;; init.el ends here
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-vc-selected-packages
-   '((rose-pine-doom-emacs :url
-                           "https://github.com/donniebreve/rose-pine-doom-emacs"
-                           :branch "main"))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
