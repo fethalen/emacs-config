@@ -204,7 +204,6 @@
   ;; currently writing.
   (eldoc-mode 1))
 
-;;; Programming modes
 (add-hook 'prog-mode-hook 'my-prog-mode-hooks)
 
 (defun my/text-mode-hooks ()
@@ -312,16 +311,15 @@
 (guide-key-mode 1)
 
 ;; Enable Polymode.
-
-(use-package poly-R
+(use-package polymode
   :ensure t
-  :mode ("\\.Rmd\\'" . poly-markdown+r-mode))
-
-(use-package poly-markdown
-  :ensure t)
-
-(use-package poly-org
-  :ensure t)
+  :mode (("\\.Rmd\\'"   . poly-markdown+r-mode)
+         ("\\.Rnw\\'"   . poly-noweb+r-mode)
+         ("\\.Snw\\'"   . poly-noweb+r-mode))
+  :config
+  ;; Enable smart indentation and highlighting
+  (setq poly-noweb-auto-indent t
+        poly-markdown-auto-indent t))
 
 ;; Terminal emulation
 (straight-use-package
@@ -348,11 +346,6 @@
               (setq-local scroll-step 1)
               (setq-local scroll-margin 0)
               (setq-local auto-window-vscroll nil))))
-
-;; R modes
-(add-to-list 'auto-mode-alist '("\\.Snw" . poly-noweb+r-mode))
-(add-to-list 'auto-mode-alist '("\\.Rnw" . poly-noweb+r-mode))
-(add-to-list 'auto-mode-alist '("\\.Rmd" . poly-markdown+r-mode))
 
 ;; Treemacs core
 (use-package treemacs
@@ -505,20 +498,35 @@
 
 ;;; Lisp
 
-(defun my-lisp-hook ()
-  "Minor modes that should be loaded in various Lisp modes."
-  ;; Highlight parentheses, brackets or braces according to their depth.
-  (rainbow-delimiters-mode)
+(defun my/lisp-hook ()
+  "Minor modes for various Lisp modes."
   (paredit-mode 1)
+  (rainbow-delimiters-mode 1)
   (eldoc-mode 1))
 
-;; Geiser
-(defvar geiser-mit-binary "/usr/local/bin/mit-scheme")
-(defvar geiser-active-implementations '(mit))
-(add-hook 'geiser-repl-mode-hook 'rainbow-delimiters-mode)
+(dolist (hook '(emacs-lisp-mode-hook
+                eval-expression-minibuffer-setup-hook
+                ielm-mode-hook
+                lisp-mode-hook
+                lisp-interaction-mode-hook
+                scheme-mode-hook))
+  (add-hook hook #'my/lisp-hook))
+
+;; Geiser (Scheme)
+(use-package geiser
+  :ensure t
+  :config
+  (setq geiser-active-implementations '(mit)
+        geiser-mit-binary "/usr/local/bin/mit-scheme")
+  (add-hook 'geiser-repl-mode-hook #'rainbow-delimiters-mode))
 
 ;; Slime
-(setq-default inferior-lisp-program "/usr/local/bin/sbcl")
+(use-package slime
+  :ensure t
+  :init
+  (setq inferior-lisp-program "/usr/local/bin/sbcl")
+  :config
+  (slime-setup '(slime-fancy slime-repl)))
 
 ;; Clojure
 (use-package cider
@@ -535,13 +543,5 @@
         nrepl-hide-special-buffers t
         cider-overlays-use-font-lock t)
   (cider-repl-toggle-pretty-printing))
-
-;; Add hooks to each Lisp mode
-(add-hook 'emacs-lisp-mode-hook #'my-lisp-hook)
-(add-hook 'eval-expression-minibuffer-setup-hook #'my-lisp-hook)
-(add-hook 'ielm-mode-hook #'my-lisp-hook)
-(add-hook 'lisp-mode-hook #'my-lisp-hook)
-(add-hook 'lisp-interaction-mode-hook #'my-lisp-hook)
-(add-hook 'scheme-mode-hook #'my-lisp-hook)
 
 ;;; init.el ends here
