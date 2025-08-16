@@ -63,9 +63,6 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-(unless (cl-every 'package-installed-p package-selected-packages)
-  (package-install-selected-packages))
-
 ;;; Encoding
 
 (set-default-coding-systems 'utf-8)     ; Default to UTF-8 encoding
@@ -117,8 +114,8 @@
 ;;; macOS
 
 (when (eq system-type 'darwin)
-  (setq mac-control-modifier 'ctrl)
-  (setq mac-command-modifier 'super)
+  (setq mac-control-modifier 'super)
+  (setq mac-command-modifier 'ctrl)
   (setq mac-option-modifier 'meta)
   ;; Load the actual path environment.
   (exec-path-from-shell-initialize)
