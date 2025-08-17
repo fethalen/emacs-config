@@ -182,13 +182,13 @@
   ;; Hide emphasis markers.
   (defvar org-hide-emphasis-markers t))
 
-(defun my-org-hook ()
+(defun my/org-hook ()
   "Execute these settings when going into org-mode."
   (poly-org-mode 1))
 
-(add-hook 'org-mode-hook 'my-org-hook)
+(add-hook 'org-mode-hook 'my/org-hook)
 
-(defun my-prog-mode-hooks ()
+(defun my/prog-mode-hooks ()
   "Settings applied to all programming modes."
   ;; Show line numbers
   ;; (display-line-numbers-mode)
@@ -204,7 +204,7 @@
   ;; currently writing.
   (eldoc-mode 1))
 
-(add-hook 'prog-mode-hook 'my-prog-mode-hooks)
+(add-hook 'prog-mode-hook 'my/prog-mode-hooks)
 
 (defun my/text-mode-hooks ()
   "Settings applied to text-centric modes (e.g., Org, Markdown, plain-text)."
@@ -548,16 +548,3 @@
   (cider-repl-toggle-pretty-printing))
 
 ;;; init.el ends here
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("4130a9efe19a6a298ebb86a09652511ffed35c4fd611ad3028b47dcea1f756f4" default)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
