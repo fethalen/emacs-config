@@ -239,10 +239,7 @@
         avy-style 'at-full         ;; show all keys before target
         avy-all-windows t          ;; search across all visible windows
         avy-timeout-seconds 0.5    ;; idle delay before hints
-        avy-case-fold-search nil))
-
-
-;; case-sensitive search
+        avy-case-fold-search nil)) ;; case-sensitive search
 
 ;; Completion UI
 (use-package vertico
