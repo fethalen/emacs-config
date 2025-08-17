@@ -114,8 +114,8 @@
 ;;; macOS
 
 (when (eq system-type 'darwin)
-  (setq mac-control-modifier 'super)
-  (setq mac-command-modifier 'ctrl)
+  (setq mac-control-modifier 'ctrl)
+  (setq mac-command-modifier 'super)
   (setq mac-option-modifier 'meta)
   ;; Load the actual path environment.
   (exec-path-from-shell-initialize)
@@ -241,7 +241,7 @@
         avy-timeout-seconds 0.5    ;; idle delay before hints
         avy-case-fold-search nil)) ;; case-sensitive search
 
-;; Completion UI
+;; Minibuffer completion
 (use-package vertico
   :ensure t
   :init (vertico-mode))
@@ -291,6 +291,30 @@
         history-delete-duplicates t
         savehist-additional-variables '(extended-command-history))
   (savehist-mode 1))
+
+;; In-buffer completion
+(use-package corfu
+  :ensure t
+  :init
+  (global-corfu-mode) ;; enable Corfu globally
+
+  ;; ;; Optional settings
+  ;; (setq corfu-auto t)         ;; auto-complete without M-TAB
+  ;; (setq corfu-auto-delay 0.0) ;; no delay
+  ;; (setq corfu-auto-prefix 1)  ;; start after 1 char
+  ;; (setq corfu-quit-no-match 'separator)
+  ;; (setq corfu-preview-current nil) ;; don't preselect
+  ;; (setq corfu-cycle t)             ;; cycle through candidates
+  )
+
+;; Extra completion sources
+(use-package cape
+  :ensure t
+  :init
+  ;; Add useful default completion sources
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-keyword))
 
 ;; Markdown & GitHub Flavored Markdown
 (use-package markdown-mode
@@ -403,13 +427,21 @@
   :mode "\\.py\\'"
   :hook (python-ts-mode . eglot-ensure))
 
-;; Eglot setup
+;; LSP client
 (use-package eglot
   :straight (:type built-in)
   :config
   ;; Point Eglot to pyright
   (add-to-list 'eglot-server-programs
-               `(python-ts-mode . ("pyright-langserver" "-m" "pyright" "--stdio"))))
+               `(python-ts-mode . ("pyright-langserver" "-m" "pyright"
+                                   "--stdio")))
+  ;; Tell Eglot to use corfu via completion-at-point-functions
+  (add-hook 'eglot-managed-mode-hook
+            (lambda ()
+              (setq-local completion-at-point-functions
+                          (list (cape-super-capf
+                                 #'eglot-completion-at-point
+                                 #'dabbrev-completion))))))
 
 ;; Conda integration
 (use-package conda
@@ -419,30 +451,6 @@
   (setq conda-env-home-directory conda-anaconda-home)
   (setq conda-env-subdirectory "envs")
   (conda-env-autoactivate-mode t))
-
-;; Completion
-(use-package corfu
-  :ensure t
-  :init
-  (global-corfu-mode) ;; enable Corfu globally
-
-  ;; Optional settings
-  (setq corfu-auto t)         ;; auto-complete without M-TAB
-  (setq corfu-auto-delay 0.0) ;; no delay
-  (setq corfu-auto-prefix 1)  ;; start after 1 char
-  (setq corfu-quit-no-match 'separator)
-  (setq corfu-preview-current nil) ;; don't preselect
-  (setq corfu-cycle t)             ;; cycle through candidates
-  )
-
-;; Extra completion sources
-(use-package cape
-  :ensure t
-  :init
-  ;; Add useful default completion sources
-  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-  (add-to-list 'completion-at-point-functions #'cape-file)
-  (add-to-list 'completion-at-point-functions #'cape-keyword))
 
 ;; Version management
 (use-package pyvenv
