@@ -221,22 +221,28 @@
   :config
   (which-key-mode))
 
-;; Avy - quick jump to anything
+;; Fast, on-screen navigation by character, word, or line
 (use-package avy
   :ensure t
   :bind
-  (("C-:"   . avy-goto-char)              ;; jump to char
-   ("C-'"   . avy-goto-char-2)            ;; jump to two-char sequence
+  (("C-:"   . avy-goto-char)              ;; jump to a single char
+   ("C-'"   . avy-goto-char-2)            ;; jump to a 2-char sequence
+   ("M-g j" . avy-goto-char-timer)        ;; jump to typed string (timed)
    ("M-g w" . avy-goto-word-1)            ;; jump to word start
-   ("M-g l" . avy-goto-line)              ;; jump to line
+   ("M-g s" . avy-goto-subword-1)         ;; jump inside camelCase/snake_case
+   ("M-g l" . avy-goto-line)              ;; jump to beginning of line
    ("M-g e" . avy-goto-end-of-line)       ;; jump to end of line
-   ("M-g r" . avy-resume)                 ;; resume last avy command
-   ("M-g SPC" . avy-goto-whitespace-end)) ;; jump to whitespace end
+   ("M-g SPC" . avy-goto-whitespace-end)  ;; jump to end of whitespace
+   ("M-g r" . avy-resume))                ;; resume last avy command
   :config
   (setq avy-background t           ;; dim background during selection
-        avy-style 'at              ;; show key before target
+        avy-style 'at-full         ;; show all keys before target
         avy-all-windows t          ;; search across all visible windows
-        avy-case-fold-search nil)) ;; be case-sensitive if needed
+        avy-timeout-seconds 0.5    ;; idle delay before hints
+        avy-case-fold-search nil))
+
+
+;; case-sensitive search
 
 ;; Completion UI
 (use-package vertico
@@ -545,3 +551,16 @@
   (cider-repl-toggle-pretty-printing))
 
 ;;; init.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   '("4130a9efe19a6a298ebb86a09652511ffed35c4fd611ad3028b47dcea1f756f4" default)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
