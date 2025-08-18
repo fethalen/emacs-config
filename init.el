@@ -439,7 +439,7 @@
   (add-hook 'eglot-managed-mode-hook
             (lambda ()
               (setq-local completion-at-point-functions
-                          (list (cape-super-capf
+                          (list (cape-super-carf
                                  #'eglot-completion-at-point
                                  #'dabbrev-completion))))))
 
@@ -447,7 +447,7 @@
 (use-package conda
   :straight t
   :config
-  (setq conda-anaconda-home (expand-file-name "~/opt/homebrew/Caskroom/miniconda/"))
+  (setq conda-anaconda-home (expand-file-name "/Users/fsandberg/miniconda3"))
   (setq conda-env-home-directory conda-anaconda-home)
   (setq conda-env-subdirectory "envs")
   (conda-env-autoactivate-mode t))
