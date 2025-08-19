@@ -150,17 +150,19 @@
 
 (add-hook 'ns-system-appearance-change-functions #'my/apply-theme)
 
-;; Auto complete commands.
+;; Auto complete commands
 (smex-initialize)
 (global-set-key (kbd "M-x") 'smex)
 (global-set-key (kbd "M-X") 'smex-major-mode-commands)
 ;; Old M-x.
 (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
 
+;; Quickly grow/shrink selection
 (use-package expand-region
-  :bind ("C-=" . er/expand-region))
+  :bind (("C-=" . er/expand-region)
+         ("C--" . er/contract-region)))
 
-;; Org-mode configuration.
+;; Org-mode configuration
 (with-eval-after-load 'org
   (define-key global-map "\C-cl" 'org-store-link)
   (define-key global-map "\C-ca" 'org-agenda)
@@ -189,25 +191,26 @@
 (add-hook 'org-mode-hook 'my/org-hook)
 
 (defun my/prog-mode-hooks ()
-  "Settings applied to all programming modes."
+  "Settings applied to programming modes."
+  ;; Highlight current line
+  (hl-line-mode)
+  ;; Show, in the echo area, the argument list of the function call you are
+  ;; currently writing.
+  (eldoc-mode 1)
   ;; Show line numbers
   ;; (display-line-numbers-mode)
   ;; Display relative line numbers
   ;; (setq display-line-numbers 'relative)
   ;; Display an indiciation of the ‘fill-column’ position
   ;; (display-fill-column-indicator-mode)
-  ;; Highlight current line
-  (hl-line-mode)
   ;; Show indicator for empty lines at the end of the buffer
   ;; (setq indicate-empty-lines t)
-  ;; Show, in the echo area, the argument list of the function call you are
-  ;; currently writing.
-  (eldoc-mode 1))
+  )
 
 (add-hook 'prog-mode-hook 'my/prog-mode-hooks)
 
 (defun my/text-mode-hooks ()
-  "Settings applied to text-centric modes (e.g., Org, Markdown, plain-text)."
+  "Settings applied to text-centric modes."
   ;; Highlight current line
   (hl-line-mode)
   ;; Show indicator for empty lines at the end of the buffer
@@ -298,15 +301,45 @@
   :ensure t
   :init
   (global-corfu-mode) ;; enable Corfu globally
-
-  ;; ;; Optional settings
+  :config
+  ;; Optional settings
   ;; (setq corfu-auto t)         ;; auto-complete without M-TAB
   ;; (setq corfu-auto-delay 0.0) ;; no delay
   ;; (setq corfu-auto-prefix 1)  ;; start after 1 char
   ;; (setq corfu-quit-no-match 'separator)
   ;; (setq corfu-preview-current nil) ;; don't preselect
   ;; (setq corfu-cycle t)             ;; cycle through candidates
-  )
+
+  ;; Popup info (like docs/signatures) inline with Corfu
+  (corfu-popupinfo-mode 1)
+  (setq corfu-popupinfo-delay 0.1
+        corfu-popupinfo-max-width 80
+        corfu-popupinfo-max-height 20)
+
+  ;; Theme-aware face adjustments
+  (let* ((bg       (face-background 'default nil t))
+         (bg-alt   (or (face-background 'tooltip nil t) bg))
+         (region   (face-background 'region nil t))
+         (dim      (face-foreground 'shadow nil t)))
+    (custom-set-faces
+     `(corfu-default      ((t (:background ,bg-alt))))
+     `(corfu-current      ((t (:background ,region :extend t))))
+     `(corfu-annotations  ((t (:foreground ,dim))))
+     `(corfu-border       ((t (:background ,bg-alt))))
+     `(corfu-bar          ((t (:background ,dim)))))))
+
+;; Fix
+(with-eval-after-load 'corfu
+  (let* ((bg       (face-background 'default nil t))
+         (bg-alt   (or (face-background 'tooltip nil t) bg))
+         (region   (face-background 'region nil t))
+         (dim      (face-foreground 'shadow nil t)))
+    (custom-set-faces
+     `(corfu-default   ((t (:background ,bg-alt))))
+     `(corfu-current   ((t (:background ,region :extend t))))
+     `(corfu-annotations ((t (:foreground ,dim))))
+     `(corfu-border    ((t (:background ,bg-alt))))
+     `(corfu-bar       ((t (:background ,dim)))))))
 
 ;; Extra completion sources
 (use-package cape
@@ -506,8 +539,7 @@
 (defun my/lisp-hook ()
   "Minor modes for various Lisp modes."
   (paredit-mode 1)
-  (rainbow-delimiters-mode 1)
-  (eldoc-mode 1))
+  (rainbow-delimiters-mode ))
 
 (dolist (hook '(emacs-lisp-mode-hook
                 eval-expression-minibuffer-setup-hook
