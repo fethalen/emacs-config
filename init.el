@@ -199,7 +199,7 @@
   ;; Highlight current line
   (hl-line-mode)
   ;; Show indicator for empty lines at the end of the buffer
-  (setq indicate-empty-lines t)
+  ;; (setq indicate-empty-lines t)
   ;; Show, in the echo area, the argument list of the function call you are
   ;; currently writing.
   (eldoc-mode 1))
@@ -211,7 +211,8 @@
   ;; Highlight current line
   (hl-line-mode)
   ;; Show indicator for empty lines at the end of the buffer
-  (setq indicate-empty-lines t))
+  ;; (setq indicate-empty-lines t)
+  )
 
 (add-hook 'text-mode-hook 'my/text-mode-hooks)
 
@@ -411,8 +412,6 @@
   :config
   (treemacs-load-theme "all-the-icons"))
 
-;;; Python
-
 ;; Tree-sitter auto management
 (use-package treesit-auto
   :straight t
@@ -421,36 +420,31 @@
   (treesit-auto-add-to-auto-mode-alist 'python)
   (global-treesit-auto-mode))
 
-;; Python major mode (built into Emacs 29+)
-(use-package python-ts-mode
-  :straight (:type built-in)
-  :mode "\\.py\\'"
-  :hook (python-ts-mode . eglot-ensure))
-
 ;; LSP client
 (use-package eglot
-  :straight (:type built-in)
+  :ensure t
+  :hook ((python-mode . eglot-ensure)) ;; auto-start in Python buffers
   :config
-  ;; Point Eglot to pyright
+  ;; Tell Eglot to use pyright as the LSP server
   (add-to-list 'eglot-server-programs
-               `(python-ts-mode . ("pyright-langserver" "-m" "pyright"
-                                   "--stdio")))
-  ;; Tell Eglot to use corfu via completion-at-point-functions
-  (add-hook 'eglot-managed-mode-hook
-            (lambda ()
-              (setq-local completion-at-point-functions
-                          (list (cape-super-carf
-                                 #'eglot-completion-at-point
-                                 #'dabbrev-completion))))))
+               '(python-mode . ("pyright-langserver" "--stdio"))))
 
 ;; Conda integration
 (use-package conda
   :straight t
   :config
-  (setq conda-anaconda-home (expand-file-name "/Users/fsandberg/miniconda3"))
+  (setq conda-anaconda-home (expand-file-name "~/opt/homebrew/Caskroom/miniconda/"))
   (setq conda-env-home-directory conda-anaconda-home)
   (setq conda-env-subdirectory "envs")
   (conda-env-autoactivate-mode t))
+
+;;; Python
+
+;; Python major mode (built into Emacs 29+)
+(use-package python-ts-mode
+  :straight (:type built-in)
+  :mode "\\.py\\'"
+  :hook (python-ts-mode . eglot-ensure))
 
 ;; Version management
 (use-package pyvenv
