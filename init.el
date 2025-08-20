@@ -92,6 +92,7 @@
  auto-fill-function 'do-auto-fill       ; Automatically break long lines
  echo-keystrokes -1                     ; Echo keystrokes instantaneously
  cursor-type 'box                       ; Set the cursor style to a box
+ blink-cursor-mode nil                  ; Disable cursor blinking
  auto-save-default nil)                 ; Disable auto-save
 
 ;; Delete trailing whitespace upon save.
@@ -107,30 +108,35 @@
 (when (and window-system
            (not after-init-time))
   (set-frame-size
-   (selected-frame) 110 43)             ; Frame size
+   (selected-frame) 120 60)             ; Frame size
   (set-frame-font "Lilex Nerd Font-12") ; Font and font size
   (scroll-bar-mode -1))                 ; Disable scroll bar
 
 ;;; macOS
 
+;; Make Emacs frames full-size, not compact utility windows
+(setq default-frame-alist
+      '((ns-appearance . dark)   ;; or 'light
+        (ns-transparent-titlebar . nil)
+        (undecorated . nil)))
+
 (when (eq system-type 'darwin)
-  (setq mac-control-modifier 'ctrl)
-  (setq mac-command-modifier 'super)
-  (setq mac-option-modifier 'meta)
-  ;; Load the actual path environment.
+  ;; Modifier keys
+  (setq mac-control-modifier 'super
+        mac-command-modifier 'ctrl
+        mac-option-modifier  'meta)
+
+  ;; Load the actual path environment
   (exec-path-from-shell-initialize)
-  ;; Do not display a text or an icon within the titlebar.
+
+  ;; Frame appearance
   (setq frame-title-format nil)
-  ;; This will cause the titlebar text to be visible on a light background.
-  (add-to-list 'default-frame-alist '(ns-appearance . light))
-  ;; Use a transparent titlebar.
-  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t)))
+  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+
+  ;; Apply theme based on system appearance
+  (add-hook 'ns-system-appearance-change-functions #'my/apply-theme))
 
 ;;; Appearance
-
-(defadvice load-theme (before clear-previous-themes activate)
-  "Clear existing theme instead of layering them."
-  (mapc #'disable-theme custom-enabled-themes))
 
 (straight-use-package
  '(rose-pine-doom-emacs
@@ -141,12 +147,30 @@
 (add-to-list 'custom-theme-load-path
              (straight--build-dir "rose-pine-doom-emacs"))
 
+(use-package doom-themes
+  :custom
+  (doom-themes-enable-bold t)
+  (doom-themes-enable-italic t)
+  :config
+  ;; Enable flashing mode-line on errors
+  (doom-themes-visual-bell-config)
+  ;; Enable custom neotree theme (nerd-icons must be installed!)
+  ;; (doom-themes-neotree-config)
+  ;; or for treemacs users
+  (doom-themes-treemacs-config)
+  ;; Corrects (and improves) org-mode's native fontification.
+  (doom-themes-org-config))
+
+(defadvice load-theme (before clear-previous-themes activate)
+  "Clear existing theme instead of layering them."
+  (mapc #'disable-theme custom-enabled-themes))
+
 (defun my/apply-theme (appearance)
   "Load theme, taking current system appearance into consideration."
   (mapc #'disable-theme custom-enabled-themes)
   (pcase appearance
     ('light (load-theme 'doom-rose-pine-dawn t))
-    ('dark (load-theme 'doom-rose-pine t))))
+    ('dark  (load-theme 'doom-rose-pine t))))
 
 (add-hook 'ns-system-appearance-change-functions #'my/apply-theme)
 
@@ -219,6 +243,14 @@
 
 (add-hook 'text-mode-hook 'my/text-mode-hooks)
 
+(defun my/minibuffer-setup-hooks ()
+  "Settings applied whenever a minibuffer is entered."
+  ;; Disable paredit in all minibuffers to avoid RET issues
+  (when (bound-and-true-p paredit-mode)
+    (paredit-mode -1)))
+
+(add-hook 'minibuffer-setup-hook #'my/minibuffer-setup-hooks)
+
 ;; Display available keybindings in a popup.
 (use-package which-key
   :ensure t
@@ -254,10 +286,7 @@
 (use-package orderless
   :ensure t
   :init
-  (setq completion-styles '(orderless)
-        completion-category-defaults nil
-        completion-category-overrides
-        '((file (styles partial-completion)))))
+  (setq completion-styles '(orderless)))
 
 ;; Annotations in minibuffer
 (use-package marginalia
@@ -266,14 +295,15 @@
 
 ;; Commands & enhanced navigation
 (use-package consult
-  :ensure t
-  :bind (("M-x"              . execute-extended-command) ; old M-x feel
-         ("M-X"              . consult-mode-command)     ; major-mode commands
-         ("C-c C-c M-x"      . execute-extended-command) ; match smex fallback
-         ("C-x b"            . consult-buffer)
-         ("C-s"              . consult-line)
-         ("C-x p b" . consult-project-buffer)
-         ("C-x p f" . project-find-file)))
+  :bind (("M-x"         . execute-extended-command)  ;; old M-x feel
+         ("M-X"         . consult-mode-command)      ;; major-mode commands
+         ("C-c C-c M-x" . execute-extended-command)  ;; smex fallback
+         ("C-x b"       . consult-buffer)
+         ("C-s"         . consult-line)
+         ("C-x p b"     . consult-project-buffer)
+         ("C-x p f"     . project-find-file))
+  :config
+  (setq consult-highlight-matches-function #'orderless-highlight-matches))
 
 ;; Context actions
 (use-package embark
@@ -314,32 +344,7 @@
   (corfu-popupinfo-mode 1)
   (setq corfu-popupinfo-delay 0.1
         corfu-popupinfo-max-width 80
-        corfu-popupinfo-max-height 20)
-
-  ;; Theme-aware face adjustments
-  (let* ((bg       (face-background 'default nil t))
-         (bg-alt   (or (face-background 'tooltip nil t) bg))
-         (region   (face-background 'region nil t))
-         (dim      (face-foreground 'shadow nil t)))
-    (custom-set-faces
-     `(corfu-default      ((t (:background ,bg-alt))))
-     `(corfu-current      ((t (:background ,region :extend t))))
-     `(corfu-annotations  ((t (:foreground ,dim))))
-     `(corfu-border       ((t (:background ,bg-alt))))
-     `(corfu-bar          ((t (:background ,dim)))))))
-
-;; Fix
-(with-eval-after-load 'corfu
-  (let* ((bg       (face-background 'default nil t))
-         (bg-alt   (or (face-background 'tooltip nil t) bg))
-         (region   (face-background 'region nil t))
-         (dim      (face-foreground 'shadow nil t)))
-    (custom-set-faces
-     `(corfu-default   ((t (:background ,bg-alt))))
-     `(corfu-current   ((t (:background ,region :extend t))))
-     `(corfu-annotations ((t (:foreground ,dim))))
-     `(corfu-border    ((t (:background ,bg-alt))))
-     `(corfu-bar       ((t (:background ,dim)))))))
+        corfu-popupinfo-max-height 20))
 
 ;; Extra completion sources
 (use-package cape
@@ -447,7 +452,7 @@
 
 ;; Tree-sitter auto management
 (use-package treesit-auto
-  :straight t
+  :ensure t
   :config
   (setq treesit-auto-install 'prompt)
   (treesit-auto-add-to-auto-mode-alist 'python)
@@ -456,15 +461,18 @@
 ;; LSP client
 (use-package eglot
   :ensure t
-  :hook ((python-mode . eglot-ensure)) ;; auto-start in Python buffers
   :config
   ;; Tell Eglot to use pyright as the LSP server
   (add-to-list 'eglot-server-programs
-               '(python-mode . ("pyright-langserver" "--stdio"))))
+               '(python-ts-mode . ("pyright-langserver" "--stdio")))
+
+  ;; Disable type checking
+  (setq eglot-workspace-configuration
+        '((:pyright . (:python.analysis.typeCheckingMode "off")))))
 
 ;; Conda integration
 (use-package conda
-  :straight t
+  :ensure t
   :config
   (setq conda-anaconda-home (expand-file-name "~/opt/homebrew/Caskroom/miniconda/"))
   (setq conda-env-home-directory conda-anaconda-home)
@@ -473,9 +481,8 @@
 
 ;;; Python
 
-;; Python major mode (built into Emacs 29+)
 (use-package python-ts-mode
-  :straight (:type built-in)
+  :ensure nil
   :mode "\\.py\\'"
   :hook (python-ts-mode . eglot-ensure))
 
