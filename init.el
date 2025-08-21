@@ -116,9 +116,8 @@
 
 ;; Make Emacs frames full-size, not compact utility windows
 (setq default-frame-alist
-      '((ns-appearance . dark)   ;; or 'light
-        (ns-transparent-titlebar . nil)
-        (undecorated . nil)))
+      '((ns-appearance . light)   ;; or 'light
+        (ns-transparent-titlebar . nil)))
 
 (when (eq system-type 'darwin)
   ;; Modifier keys
@@ -285,8 +284,11 @@
 ;; Flexible matching
 (use-package orderless
   :ensure t
-  :init
-  (setq completion-styles '(orderless)))
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides
+   '((file (styles orderless partial-completion)))))
 
 ;; Annotations in minibuffer
 (use-package marginalia
@@ -295,15 +297,16 @@
 
 ;; Commands & enhanced navigation
 (use-package consult
-  :bind (("M-x"         . execute-extended-command)  ;; old M-x feel
-         ("M-X"         . consult-mode-command)      ;; major-mode commands
-         ("C-c C-c M-x" . execute-extended-command)  ;; smex fallback
+  :ensure t
+  :after orderless
+  :init
+  :bind (("M-x"         . execute-extended-command) ;; old M-x feel
+         ("M-X"         . consult-mode-command)     ;; major-mode commands
+         ("C-c C-c M-x" . execute-extended-command) ;; smex fallback
          ("C-x b"       . consult-buffer)
          ("C-s"         . consult-line)
          ("C-x p b"     . consult-project-buffer)
-         ("C-x p f"     . project-find-file))
-  :config
-  (setq consult-highlight-matches-function #'orderless-highlight-matches))
+         ("C-x p f"     . project-find-file)))
 
 ;; Context actions
 (use-package embark
@@ -461,14 +464,7 @@
 ;; LSP client
 (use-package eglot
   :ensure t
-  :config
-  ;; Tell Eglot to use pyright as the LSP server
-  (add-to-list 'eglot-server-programs
-               '(python-ts-mode . ("pyright-langserver" "--stdio")))
-
-  ;; Disable type checking
-  (setq eglot-workspace-configuration
-        '((:pyright . (:python.analysis.typeCheckingMode "off")))))
+  :config)
 
 ;; Conda integration
 (use-package conda
@@ -484,7 +480,14 @@
 (use-package python-ts-mode
   :ensure nil
   :mode "\\.py\\'"
-  :hook (python-ts-mode . eglot-ensure))
+  :hook (python-ts-mode . eglot-ensure)
+  :config
+  (setq eglot-workspace-configuration
+      '(:pyright (:python.analysis.typeCheckingMode "off")))
+
+  ;; Tell Eglot to use pyright as the LSP server
+  (add-to-list 'eglot-server-programs
+               '(python-ts-mode . ("pyright-langserver" "--stdio"))))
 
 ;; Version management
 (use-package pyvenv
