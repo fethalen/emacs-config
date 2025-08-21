@@ -112,7 +112,7 @@
   (set-frame-font "Lilex Nerd Font-12") ; Font and font size
   (scroll-bar-mode -1))                 ; Disable scroll bar
 
-;; Enable smooth per-pixel scrolling (Emacs 29+).
+;; Enable smooth per-pixel scrolling (introduced in Emacs v29.1).
 ;; Makes trackpad/mouse-wheel scrolling fluid and precise.
 (when (fboundp 'pixel-scroll-precision-mode)
   (pixel-scroll-precision-mode 1))
