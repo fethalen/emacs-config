@@ -276,12 +276,12 @@
         avy-timeout-seconds 0.5    ;; idle delay before hints
         avy-case-fold-search nil)) ;; case-sensitive search
 
-;; Minibuffer completion
+;; Vertical minibuffer completions
 (use-package vertico
   :ensure t
   :init (vertico-mode))
 
-;; Flexible matching
+;; Orderless completions
 (use-package orderless
   :ensure t
   :custom
@@ -328,6 +328,18 @@
         history-delete-duplicates t
         savehist-additional-variables '(extended-command-history))
   (savehist-mode 1))
+
+;; Async fuzzy finder
+(use-package affe
+  :ensure t
+  :after consult
+  :bind (("C-x p g" . affe-grep)
+         ("C-x p G" . affe-grep-no-ignore)
+         ("C-x p r" . affe-find))
+  :config
+  ;; Integrate with orderless
+  (setq affe-regexp-function #'orderless-regexp
+        affe-highlight-function #'orderless-highlight-matches))
 
 ;; In-buffer completion
 (use-package corfu
