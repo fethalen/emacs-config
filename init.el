@@ -99,12 +99,21 @@
 ;;; GUI
 
 ;; Only run at startup
-(when (and window-system
-           (not after-init-time))
-  (set-frame-size
-   (selected-frame) 120 60)             ; Frame size
-  (set-frame-font "Lilex Nerd Font-12") ; Font and font size
-  (scroll-bar-mode -1))                 ; Disable scroll bar
+(when (and window-system (not after-init-time))
+  ;; Frame size
+  (set-frame-size (selected-frame) 120 60)
+
+  ;; Font settings
+  (set-face-attribute 'default nil
+                    :family "Lilex Nerd Font"
+                    :height 120)
+
+
+  ;; Line spacing for readability
+  (setq-default line-spacing 0.15)
+
+  ;; Disable scroll bar
+  (scroll-bar-mode -1))
 
 ;; Enable smooth per-pixel scrolling (introduced in Emacs v29.1).
 ;; Makes trackpad/mouse-wheel scrolling fluid and precise.
@@ -118,6 +127,9 @@
   (setq mac-control-modifier 'super
         mac-command-modifier 'ctrl
         mac-option-modifier  'meta)
+
+  ;; Render text antialiased
+  (setq mac-allow-anti-aliasing t)
 
   ;; Load PATH from shell
   (use-package exec-path-from-shell
