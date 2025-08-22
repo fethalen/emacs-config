@@ -103,7 +103,7 @@
 
 ;;; GUI
 
-;; Only run on startup.
+;; Only run at startup
 (when (and window-system
            (not after-init-time))
   (set-frame-size
@@ -111,11 +111,16 @@
   (set-frame-font "Lilex Nerd Font-12") ; Font and font size
   (scroll-bar-mode -1))                 ; Disable scroll bar
 
+;; Enable smooth per-pixel scrolling (introduced in Emacs v29.1).
+;; Makes trackpad/mouse-wheel scrolling fluid and precise.
+(when (fboundp 'pixel-scroll-precision-mode)
+  (pixel-scroll-precision-mode 1))
+
 ;;; macOS
 
 ;; Make Emacs frames full-size, not compact utility windows
 (setq default-frame-alist
-      '((ns-appearance . light)   ;; or 'light
+      '((ns-appearance . light) ;; or 'light
         (ns-transparent-titlebar . nil)))
 
 (when (eq system-type 'darwin)
