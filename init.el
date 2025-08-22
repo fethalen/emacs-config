@@ -92,7 +92,6 @@
  auto-fill-function 'do-auto-fill       ; Automatically break long lines
  echo-keystrokes -1                     ; Echo keystrokes instantaneously
  cursor-type 'box                       ; Set the cursor style to a box
- blink-cursor-mode nil                  ; Disable cursor blinking
  auto-save-default nil)                 ; Disable auto-save
 
 ;; Delete trailing whitespace upon save.
@@ -347,10 +346,9 @@
   :init
   (global-corfu-mode) ;; enable Corfu globally
   :config
-  ;; Optional settings
   ;; (setq corfu-auto t)         ;; auto-complete without M-TAB
-  ;; (setq corfu-auto-delay 0.0) ;; no delay
-  ;; (setq corfu-auto-prefix 1)  ;; start after 1 char
+  ;; (setq corfu-auto-delay 0.2) ;; 0.2 seconds delay
+  ;; (setq corfu-auto-prefix 1)  ;; start completion after 2 characters
   ;; (setq corfu-quit-no-match 'separator)
   ;; (setq corfu-preview-current nil) ;; don't preselect
   ;; (setq corfu-cycle t)             ;; cycle through candidates
