@@ -30,15 +30,12 @@
         consult
         corfu
         doom-themes
-        elpy
         embark
         embark-consult
         exec-path-from-shell
         expand-region
         flycheck
         geiser
-        guide-key
-        ivy
         julia-ts-mode
         julia-snail
         magit
@@ -50,15 +47,13 @@
         polymode
         savehist
         smex
-        swiper
         vertico
         which-key
         rainbow-delimiters))
 
 (setq package-archives
       '(("melpa" . "https://melpa.org/packages/")
-        ("gnu" . "https://elpa.gnu.org/packages/")
-        ("org" . "http://orgmode.org/elpa/")))
+        ("gnu" . "https://elpa.gnu.org/packages/")))
 
 (unless package-archive-contents
   (package-refresh-contents))
@@ -118,25 +113,24 @@
 
 ;;; macOS
 
-;; Make Emacs frames full-size, not compact utility windows
-(setq default-frame-alist
-      '((ns-appearance . light) ;; or 'light
-        (ns-transparent-titlebar . nil)))
-
 (when (eq system-type 'darwin)
   ;; Modifier keys
   (setq mac-control-modifier 'super
         mac-command-modifier 'ctrl
         mac-option-modifier  'meta)
 
-  ;; Load the actual path environment
-  (exec-path-from-shell-initialize)
+  ;; Load PATH from shell
+  (use-package exec-path-from-shell
+    :config
+    (exec-path-from-shell-initialize))
 
-  ;; Frame appearance
+  ;; Frame settings
   (setq frame-title-format nil)
-  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+  (setq default-frame-alist
+        '((ns-appearance . light)
+          (ns-transparent-titlebar . t)))
 
-  ;; Apply theme based on system appearance
+  ;; Switch theme with system appearance
   (add-hook 'ns-system-appearance-change-functions #'my/apply-theme))
 
 ;;; Appearance
@@ -177,45 +171,22 @@
 
 (add-hook 'ns-system-appearance-change-functions #'my/apply-theme)
 
-;; Auto complete commands
-(smex-initialize)
-(global-set-key (kbd "M-x") 'smex)
-(global-set-key (kbd "M-X") 'smex-major-mode-commands)
-;; Old M-x.
-(global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)
-
 ;; Quickly grow/shrink selection
 (use-package expand-region
   :bind (("C-=" . er/expand-region)
          ("C--" . er/contract-region)))
 
-;; Org-mode configuration
-(with-eval-after-load 'org
-  (define-key global-map "\C-cl" 'org-store-link)
-  (define-key global-map "\C-ca" 'org-agenda)
-  (defvar org-log-done t)
-  ;; Define my agenda files
-  (defvar org-agenda-files (list "~/org/work.org"
-                                 "~/org/studies.org"
-                                 "~/org/personal.org"))
-  ;; Use actual circular bullets in lists.
-  (font-lock-add-keywords 'org-mode
-                          '(("^ +\\([-*]\\) "
-                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
-  ;; Hide leading stars.
-  (defvar org-hide-leading-stars t)
-  ;; Don't fold headlines when opening an Org file.
-  (defvar org-inhibit-startup-visibility-stuff t)
-  ;; Display entities as symbols.
-  (defvar org-pretty-entities t)
-  ;; Hide emphasis markers.
-  (defvar org-hide-emphasis-markers t))
-
-(defun my/org-hook ()
-  "Execute these settings when going into org-mode."
-  (poly-org-mode 1))
-
-(add-hook 'org-mode-hook 'my/org-hook)
+;; Plain-text system for notes, tasks, and literate programming
+(use-package org
+  :ensure t
+  :config
+  (setq org-directory "~/org"
+        org-agenda-files '("~/org/tasks.org" "~/org/projects.org")
+        org-default-notes-file "~/org/inbox.org"
+        org-log-done 'time
+        org-startup-indented t
+        org-hide-leading-stars t
+        org-ellipsis " ▾"))
 
 (defun my/prog-mode-hooks ()
   "Settings applied to programming modes."
@@ -390,9 +361,6 @@
 ;; (global-flycheck-mode)
 ;; (setq-default ispell-dictionary "american"
 ;;               ispell-local-dictionary "american")
-
-;; When non-nil, display available key-bindings on combined keypresses.
-(guide-key-mode 1)
 
 ;; Enable Polymode.
 (use-package polymode
