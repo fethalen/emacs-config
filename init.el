@@ -18,8 +18,6 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-(require 'package)
-
 (package-initialize)
 
 (setq package-selected-packages
@@ -183,6 +181,8 @@
 
 (add-hook 'ns-system-appearance-change-functions #'my/apply-theme)
 
+;;; Editing
+
 ;; Quickly grow/shrink selection
 (use-package expand-region
   :bind (("C-=" . er/expand-region)
@@ -333,6 +333,10 @@
   :ensure t
   :init
   (global-corfu-mode) ;; enable Corfu globally
+  :bind (:map corfu-map
+              ("M-p" . corfu-popupinfo-scroll-down)
+              ("M-n" . corfu-popupinfo-scroll-up)
+              ("M-d" . corfu-popupinfo-toggle))
   :config
   ;; (setq corfu-auto t)         ;; auto-complete without M-TAB
   ;; (setq corfu-auto-delay 0.2) ;; 0.2 seconds delay
