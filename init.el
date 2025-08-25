@@ -103,9 +103,8 @@
 
   ;; Font settings
   (set-face-attribute 'default nil
-                    :family "Lilex Nerd Font"
-                    :height 120)
-
+                      :family "Lilex Nerd Font"
+                      :height 120)
 
   ;; Line spacing for readability
   (setq-default line-spacing 0.15)
@@ -122,8 +121,8 @@
 
 (when (eq system-type 'darwin)
   ;; Modifier keys
-  (setq mac-control-modifier 'super
-        mac-command-modifier 'ctrl
+  (setq mac-control-modifier 'ctrl
+        mac-command-modifier 'super
         mac-option-modifier  'meta)
 
   ;; Render text antialiased
