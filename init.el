@@ -2,22 +2,6 @@
 
 ;;; Packages
 
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name
-        "straight/repos/straight.el/bootstrap.el"
-        (or (bound-and-true-p straight-base-dir)
-            user-emacs-directory)))
-      (bootstrap-version 7))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-
 (package-initialize)
 
 (setq package-selected-packages
@@ -51,7 +35,8 @@
 
 (setq package-archives
       '(("melpa" . "https://melpa.org/packages/")
-        ("gnu" . "https://elpa.gnu.org/packages/")))
+        ("gnu" . "https://elpa.gnu.org/packages/")
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
 
 (unless package-archive-contents
   (package-refresh-contents))
@@ -144,14 +129,8 @@
 
 ;;; Appearance
 
-(straight-use-package
- '(rose-pine-doom-emacs
-   :host github :repo
-   "donniebreve/rose-pine-doom-emacs"
-   :branch "main"))
-
 (add-to-list 'custom-theme-load-path
-             (straight--build-dir "rose-pine-doom-emacs"))
+             (expand-file-name "themes/rose-pine-doom-emacs" user-emacs-directory))
 
 (use-package doom-themes
   :custom
@@ -389,30 +368,18 @@
         poly-markdown-auto-indent t))
 
 ;; Terminal emulation
-(straight-use-package
- '(eat :type git
-       :host codeberg
-       :repo "akib/emacs-eat"
-       :files ("*.el"
-               ("term" "term/*.el")
-               "*.texi"
-               "*.ti"
-               ("terminfo/e" "terminfo/e/*")
-               ("terminfo/65" "terminfo/65/*")
-               ("integration" "integration/*")
-               (:exclude ".dir-locals.el" "*-tests.el"))))
-
-(with-eval-after-load 'eat
-  (setq eat-term-name "xterm-256color")
-  (setq eat-enable-mouse t)
-  (setq eat-scroll-to-bottom-on-output 'this)
-  ;; Keep prompt at bottom like a normal terminal
-  (add-hook 'eat-mode-hook
-            (lambda ()
-              (setq-local scroll-conservatively 1000)
-              (setq-local scroll-step 1)
-              (setq-local scroll-margin 0)
-              (setq-local auto-window-vscroll nil))))
+(use-package eat
+  :ensure t
+  :defer t
+  :hook (eat-mode . (lambda ()
+                      (setq-local scroll-conservatively 1000
+                                  scroll-step 1
+                                  scroll-margin 0
+                                  auto-window-vscroll nil)))
+  :custom
+  (eat-term-name "xterm-256color")
+  (eat-enable-mouse t)
+  (eat-scroll-to-bottom-on-output 'this))
 
 ;; Treemacs core
 (use-package treemacs
@@ -506,11 +473,6 @@
   :hook (python-ts-mode . blacken-mode)
   :config
   (setq blacken-line-length 88))
-
-;; Ruff linting via Flymake
-(use-package flymake-ruff
-  :straight (flymake-ruff :type git :host github :repo "erickgnavar/flymake-ruff")
-  :hook (python-ts-mode . flymake-ruff-load))
 
 ;; Debugging
 (use-package dap-mode
