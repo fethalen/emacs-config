@@ -9,10 +9,29 @@
 ;; icon fonts on Windows. This will increase memory usage.
 (setq inhibit-compacting-font-caches t)
 
-;; ;;; Package management
+;;; Package management
 
 (setq package-quickstart nil)           ; Disable package.el’s quickstart
                                         ; feature
+;;; UI
+
+;; Disable unneeded UI elements
+(tool-bar-mode -1)                      ; No toolbar
+(menu-bar-mode -1)                      ; No menubar
+(scroll-bar-mode -1)                    ; No scrollbar
+(blink-cursor-mode -1)                  ; Solid cursor
+
+;; Frame defaults
+(add-to-list 'default-frame-alist '(width . 120))
+(add-to-list 'default-frame-alist '(height . 60))
+(add-to-list 'default-frame-alist '(font . "Lilex Nerd Font-12"))
+(add-to-list 'default-frame-alist '(line-spacing . 0.15))
+
+;; macOS-specific frame settings
+
+(when (eq system-type 'darwin)
+  (add-to-list 'default-frame-alist '(ns-appearance . light))
+  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t)))
 
 ;;; Miscellaneous
 
