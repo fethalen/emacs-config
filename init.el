@@ -51,81 +51,66 @@
 
 ;;; General
 
-(tool-bar-mode -1)                      ; Disable tool bar
-(menu-bar-mode t)                       ; Display a drawer-style menu bar
-(show-paren-mode 1)                     ; Highlight matching delimiters
-(electric-pair-mode t)                  ; Automatically close delimiters
-(defalias 'yes-or-no-p 'y-or-n-p)       ; 'y' and 'n' instead of 'yes' and 'no'
-(setq-default
- inhibit-startup-screen t               ; Inhibit startup screen
- inhibit-startup-message t              ; Inhibit startup message
- inhibit-startup-echo-area-message t    ; Disable initial echo message
- initial-scratch-message ""             ; Empty the initial *scratch* buffer
- initial-buffer-choice t                ; Open *scratch* buffer at init
- visible-bell t                         ; Visual bell instead of beep
- column-number-mode t                   ; Show current column in the mode line
- backup-inhibited t                     ; Disable auto-backup
- indent-tabs-mode nil                   ; Spaces instead of tabs when indenting
- fill-column 80                         ; Wrap lines at 79 characters
- auto-fill-function 'do-auto-fill       ; Automatically break long lines
- echo-keystrokes -1                     ; Echo keystrokes instantaneously
- cursor-type 'box                       ; Set the cursor style to a box
- auto-save-default nil)                 ; Disable auto-save
+;; Core Emacs settings
+(use-package emacs
+  :init
+  (show-paren-mode 1)                   ; Highlight matching parens
+  (electric-pair-mode 1)                ; Auto-close pairs
+  (defalias 'yes-or-no-p 'y-or-n-p)
+  :hook
+  ((text-mode . visual-line-mode)
+   (before-save . delete-trailing-whitespace))
+  :config
+  (setq
+   ;; Cursor & feedback
+   cursor-type 'box
+   visible-bell t
+   column-number-mode t
+   echo-keystrokes 0
 
-;; Delete trailing whitespace upon save.
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
+   ;; Startup
+   inhibit-startup-screen t
+   initial-scratch-message ""
+   initial-buffer-choice t
+
+   ;; Indentation
+   indent-tabs-mode nil
+   fill-column 80)
+
+  ;; Ensure backup and auto-save directories exist
+  (dolist (dir '("backups" "auto-save"))
+    (make-directory (expand-file-name dir user-emacs-directory) t))
+
+  ;; Redirect backups and auto-saves
+  (setq backup-directory-alist
+        `((".*" . ,(expand-file-name "backups/" user-emacs-directory)))
+        auto-save-file-name-transforms
+        `((".*" ,(expand-file-name "auto-save/" user-emacs-directory) t)))
+
+  ;; Enable smooth per-pixel scrolling (introduced in Emacs v29.1).
+  ;; Makes trackpad/mouse-wheel scrolling fluid and precise.
+  (when (fboundp 'pixel-scroll-precision-mode)
+    (pixel-scroll-precision-mode 1))
+
+  ;; macOS-specific runtime settings
+  (when (eq system-type 'darwin)
+    ;; Modifier keys
+    (setq mac-control-modifier 'ctrl
+          mac-command-modifier 'super
+          mac-option-modifier  'meta
+          frame-title-format nil)
+
+    ;; Switch theme with system appearance
+    (add-hook 'ns-system-appearance-change-functions #'my/apply-theme)
+
+    ;; Load PATH from shell
+    (use-package exec-path-from-shell
+      :config
+      (exec-path-from-shell-initialize))))
 
 ;; Enable mouse usage when running in a terminal.
 (unless window-system
   (xterm-mouse-mode))
-
-;;; GUI
-
-;; Only run at startup
-(when (and window-system (not after-init-time))
-  ;; Frame size
-  (set-frame-size (selected-frame) 120 60)
-
-  ;; Font settings
-  (set-face-attribute 'default nil
-                      :family "Lilex Nerd Font"
-                      :height 120)
-
-  ;; Line spacing for readability
-  (setq-default line-spacing 0.15)
-
-  ;; Disable scroll bar
-  (scroll-bar-mode -1))
-
-;; Enable smooth per-pixel scrolling (introduced in Emacs v29.1).
-;; Makes trackpad/mouse-wheel scrolling fluid and precise.
-(when (fboundp 'pixel-scroll-precision-mode)
-  (pixel-scroll-precision-mode 1))
-
-;;; macOS
-
-(when (eq system-type 'darwin)
-  ;; Modifier keys
-  (setq mac-control-modifier 'ctrl
-        mac-command-modifier 'super
-        mac-option-modifier  'meta)
-
-  ;; Render text antialiased
-  (setq mac-allow-anti-aliasing t)
-
-  ;; Load PATH from shell
-  (use-package exec-path-from-shell
-    :config
-    (exec-path-from-shell-initialize))
-
-  ;; Frame settings
-  (setq frame-title-format nil)
-  (setq default-frame-alist
-        '((ns-appearance . light)
-          (ns-transparent-titlebar . t)))
-
-  ;; Switch theme with system appearance
-  (add-hook 'ns-system-appearance-change-functions #'my/apply-theme))
 
 ;;; Appearance
 
