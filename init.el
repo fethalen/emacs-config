@@ -5,7 +5,22 @@
 (package-initialize)
 
 (setq package-selected-packages
-      '(auctex
+      '(affe
+	all-the-icons
+	auctex
+	blacken
+	conda
+	dap-mode
+	eat
+	eglot
+	org
+	python-ts-mode
+	pyvenv
+	slime
+	treemacs
+	treemacs-all-the-icons
+	treemacs-magit
+	treesit-auto
         avy
         cape
         cider
@@ -16,10 +31,9 @@
         embark-consult
         exec-path-from-shell
         expand-region
-        flycheck
         geiser
-        julia-ts-mode
         julia-snail
+        julia-ts-mode
         magit
         marginalia
         markdown-mode
@@ -27,11 +41,10 @@
         paredit
         poly-org
         polymode
+        rainbow-delimiters
         savehist
-        smex
         vertico
-        which-key
-        rainbow-delimiters))
+        which-key))
 
 (setq package-archives
       '(("melpa" . "https://melpa.org/packages/")
@@ -72,6 +85,9 @@
    inhibit-startup-screen t
    initial-scratch-message ""
    initial-buffer-choice t
+
+   ;; Increase process output buffer
+   read-process-output-max (* 1024 1024)
 
    ;; Indentation
    indent-tabs-mode nil
@@ -166,7 +182,7 @@
 (defun my/prog-mode-hooks ()
   "Settings applied to programming modes."
   ;; Highlight current line
-  (hl-line-mode)
+  ;; (hl-line-mode)
   ;; Show, in the echo area, the argument list of the function call you are
   ;; currently writing.
   (eldoc-mode 1)
@@ -185,7 +201,7 @@
 (defun my/text-mode-hooks ()
   "Settings applied to text-centric modes."
   ;; Highlight current line
-  (hl-line-mode)
+  ;; (hl-line-mode)
   ;; Show indicator for empty lines at the end of the buffer
   ;; (setq indicate-empty-lines t)
   )
@@ -331,15 +347,6 @@
          ("\\.text\\'"     . gfm-mode))
   :init
   (autoload 'gfm-mode "markdown-mode" "Major mode for editing GitHub Flavored Markdown" t))
-
-;; ;; Disable Checkdoc warnings when editing Emacs Lisp files
-;; (with-eval-after-load 'flycheck
-;;   (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
-
-;; ;; Enable a spell checker.
-;; (global-flycheck-mode)
-;; (setq-default ispell-dictionary "american"
-;;               ispell-local-dictionary "american")
 
 ;; Enable Polymode.
 (use-package polymode
@@ -488,6 +495,16 @@
   :hook (julia-ts-mode . julia-snail-mode)
   :config
   (setq julia-snail-terminal-type 'eat))
+
+;;; Shell
+
+(defun my/shell-hook ()
+  "Settings applied to Shell mode"
+  (setq tab-width 2)
+  (setq indent-tabs-mode nil))
+
+(use-package shell
+  :hook (shell-mode . my/shell-hook))
 
 ;;; Lisp
 

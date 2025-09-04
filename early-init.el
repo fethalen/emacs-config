@@ -2,6 +2,11 @@
 
 ;;; Startup performance
 
+;; Increase garbage collection threshold during init
+(setq gc-cons-threshold most-positive-fixnum)
+(add-hook 'emacs-startup-hook
+          (lambda () (setq gc-cons-threshold 100000000)))
+
 ;; Prefer loading newer compiled files
 (setq load-prefer-newer t)
 
