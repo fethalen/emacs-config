@@ -8,29 +8,23 @@
       '(affe
 	all-the-icons
 	auctex
-	blacken
-	conda
-	dap-mode
-	eat
-	eglot
-	org
-	python-ts-mode
-	pyvenv
-	slime
-	treemacs
-	treemacs-all-the-icons
-	treemacs-magit
-	treesit-auto
         avy
+        bash-ts-mode
+	blacken
         cape
         cider
+	conda
         consult
         corfu
+	dap-mode
         doom-themes
+	eat
+	eglot
         embark
         embark-consult
         exec-path-from-shell
         expand-region
+        flycheck
         geiser
         julia-snail
         julia-ts-mode
@@ -38,13 +32,24 @@
         marginalia
         markdown-mode
         orderless
+	org
         paredit
         poly-org
         polymode
+	python-ts-mode
+	pyvenv
         rainbow-delimiters
         savehist
+        shfmt
+	slime
+	treemacs
+	treemacs-all-the-icons
+	treemacs-magit
+	treesit-auto
         vertico
-        which-key))
+        which-key
+        yasnippet
+        yasnippet-snippets))
 
 (setq package-archives
       '(("melpa" . "https://melpa.org/packages/")
@@ -171,6 +176,12 @@
 (use-package org
   :ensure t
   :config
+
+  ;; Then load the shell backend
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((shell . t)))
+
   (setq org-directory "~/org"
         org-agenda-files '("~/org/tasks.org" "~/org/projects.org")
         org-default-notes-file "~/org/inbox.org"
@@ -499,12 +510,56 @@
 ;;; Shell
 
 (defun my/shell-hook ()
-  "Settings applied to Shell mode"
-  (setq tab-width 2)
-  (setq indent-tabs-mode nil))
+  "Settings applied when editing shell scripts."
+  ;; Use 2 spaces for indentation
+  (setq sh-basic-offset 2
+        sh-indentation 2)
+  ;; Make << insert a here document skeleton
+  (sh-electric-here-document-mode 1)
+  (use-local-map (copy-keymap sh-mode-map))
+  (set-keymap-parent (current-local-map) sh-mode-map))
 
-(use-package shell
-  :hook (shell-mode . my/shell-hook))
+;; Tree-sitter based Bash mode
+(use-package bash-ts-mode
+  :ensure nil
+  :mode ("\\.\\(sh\\|bash\\|zsh\\)\\'" . bash-ts-mode)
+  :interpreter (("bash" . bash-ts-mode)
+                ("sh"   . bash-ts-mode)
+                ("zsh"  . bash-ts-mode))
+  :hook (bash-ts-mode . my/shell-hook)
+  :init
+  ;; Derive sh-mode features in bash-ts-mode
+  (put 'bash-ts-mode 'derived-mode-parent 'sh-mode)
+  :config
+  (with-eval-after-load 'eglot
+    (add-to-list 'eglot-server-programs
+                 '(bash-ts-mode . ("bash-language-server" "start"))))
+  (add-hook 'bash-ts-mode-hook #'eglot-ensure))
+
+;; Syntax checking with Flycheck (needs shellcheck)
+(use-package flycheck
+  :ensure t
+  :hook (bash-ts-mode . flycheck-mode)
+  :config
+  (setq flycheck-sh-shellcheck-executable "shellcheck"))
+
+;; Snippets
+(use-package yasnippet
+  :hook (bash-ts-mode . yas-minor-mode))
+
+(use-package yasnippet-snippets
+  :after yasnippet)
+
+;; Formatting (needs shfmt installed)
+(use-package shfmt
+  :ensure t
+  :hook (bash-ts-mode . shfmt-on-save-mode)
+  :config
+  (setq shfmt-arguments '("-i" "2" "-ci")))
+
+;; Consult integration
+(use-package consult
+  :bind (("C-c f" . consult-flycheck)))	;; Syntax checking with Flycheck (requires shellcheck installed)
 
 ;;; Lisp
 
@@ -554,3 +609,22 @@
   (cider-repl-toggle-pretty-printing))
 
 ;;; init.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(affe all-the-icons auctex avy bash-ts-mode blacken cape cider conda consult
+          corfu dap-mode doom-themes eat eglot embark embark-consult
+          exec-path-from-shell expand-region flycheck geiser julia-snail
+          julia-ts-mode magit marginalia markdown-mode orderless org paredit
+          poly-org polymode python-ts-mode pyvenv rainbow-delimiters savehist
+          slime treemacs treemacs-all-the-icons treemacs-magit treesit-auto
+          vertico which-key yasnippet yasnippet-snippets)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
