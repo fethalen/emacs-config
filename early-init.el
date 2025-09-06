@@ -26,6 +26,7 @@
 
 (setq package-quickstart nil)           ; Disable package.el’s quickstart
                                         ; feature
+
 ;;; UI
 
 ;; Disable unneeded UI elements
@@ -41,7 +42,6 @@
 (add-to-list 'default-frame-alist '(line-spacing . 0.15))
 
 ;; macOS-specific frame settings
-
 (when (eq system-type 'darwin)
   (add-to-list 'default-frame-alist '(ns-appearance . light))
   (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t)))
