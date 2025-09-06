@@ -31,6 +31,7 @@
         magit
         marginalia
         markdown-mode
+	nerd-icons
         orderless
 	org
         paredit
@@ -47,6 +48,7 @@
 	treemacs-magit
 	treesit-auto
         vertico
+        vterm
         which-key
         yasnippet
         yasnippet-snippets))
@@ -138,6 +140,9 @@
 (add-to-list 'custom-theme-load-path
              (expand-file-name "themes/rose-pine-doom-emacs" user-emacs-directory))
 
+(use-package nerd-icons
+  :ensure t)
+
 (use-package doom-themes
   :custom
   (doom-themes-enable-bold t)
@@ -146,7 +151,7 @@
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
   ;; Enable custom neotree theme (nerd-icons must be installed!)
-  ;; (doom-themes-neotree-config)
+  (doom-themes-neotree-config)
   ;; or for treemacs users
   (doom-themes-treemacs-config)
   ;; Corrects (and improves) org-mode's native fontification.
@@ -227,7 +232,7 @@
 
 (add-hook 'minibuffer-setup-hook #'my/minibuffer-setup-hooks)
 
-;; Display available keybindings in a popup.
+;; Display the keybindings following an incomplete command in a pop up
 (use-package which-key
   :ensure t
   :config
@@ -370,19 +375,29 @@
   (setq poly-noweb-auto-indent t
         poly-markdown-auto-indent t))
 
+(defun my/terminal-hook ()
+  "Configuration for terminal buffers."
+  (setq-local scroll-conservatively 1000
+              scroll-step 1
+              scroll-margin 0
+              auto-window-vscroll nil
+              truncate-lines t))
+
 ;; Terminal emulation
 (use-package eat
   :ensure t
   :defer t
-  :hook (eat-mode . (lambda ()
-                      (setq-local scroll-conservatively 1000
-                                  scroll-step 1
-                                  scroll-margin 0
-                                  auto-window-vscroll nil)))
+  :hook (eat-mode . my/terminal-hook)
   :custom
   (eat-term-name "xterm-256color")
   (eat-enable-mouse t)
-  (eat-scroll-to-bottom-on-output 'this))
+  (eat-scroll-to-bottom-on-output 'this)
+  (eat-term-scrollback 10000))
+
+(use-package vterm
+  :ensure t
+  :defer t
+  :hook (vterm-mode . my/terminal-hook))
 
 ;; Treemacs core
 (use-package treemacs
@@ -618,10 +633,10 @@
    '(affe all-the-icons auctex avy bash-ts-mode blacken cape cider conda consult
           corfu dap-mode doom-themes eat eglot embark embark-consult
           exec-path-from-shell expand-region flycheck geiser julia-snail
-          julia-ts-mode magit marginalia markdown-mode orderless org paredit
-          poly-org polymode python-ts-mode pyvenv rainbow-delimiters savehist
-          slime treemacs treemacs-all-the-icons treemacs-magit treesit-auto
-          vertico which-key yasnippet yasnippet-snippets)))
+          julia-ts-mode magit marginalia markdown-mode nerd-icons orderless org
+          paredit poly-org polymode python-ts-mode pyvenv rainbow-delimiters
+          savehist shfmt slime treemacs treemacs-all-the-icons treemacs-magit
+          treesit-auto vertico vterm which-key yasnippet yasnippet-snippets)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
