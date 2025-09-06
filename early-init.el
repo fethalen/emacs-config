@@ -5,13 +5,15 @@
 ;; Reduce file-handling overhead during startup
 (defvar my/file-name-handler-alist file-name-handler-alist)
 (setq file-name-handler-alist nil)
-(add-hook 'emacs-startup-hook
-          (lambda () (setq file-name-handler-alist my/file-name-handler-alist)))
 
 ;; Increase garbage collection threshold during init
 (setq gc-cons-threshold most-positive-fixnum)
+
+;; Restore settings after startup
 (add-hook 'emacs-startup-hook
-          (lambda () (setq gc-cons-threshold 100000000)))
+          (lambda ()
+            (setq file-name-handler-alist my/file-name-handler-alist
+                  gc-cons-threshold 8000000)))
 
 ;; Prefer loading newer compiled files
 (setq load-prefer-newer t)
