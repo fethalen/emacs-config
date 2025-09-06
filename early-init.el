@@ -2,6 +2,12 @@
 
 ;;; Startup performance
 
+;; Reduce file-handling overhead during startup
+(defvar my/file-name-handler-alist file-name-handler-alist)
+(setq file-name-handler-alist nil)
+(add-hook 'emacs-startup-hook
+          (lambda () (setq file-name-handler-alist my/file-name-handler-alist)))
+
 ;; Increase garbage collection threshold during init
 (setq gc-cons-threshold most-positive-fixnum)
 (add-hook 'emacs-startup-hook
