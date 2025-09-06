@@ -61,6 +61,9 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
+(setq use-package-always-ensure t	; Install packages if missing
+      use-package-always-defer t)	; Load lazily unless explicitly demanded
+
 ;;; Encoding
 
 (set-default-coding-systems 'utf-8)     ; Default to UTF-8 encoding
@@ -140,8 +143,7 @@
 (add-to-list 'custom-theme-load-path
              (expand-file-name "themes/rose-pine-doom-emacs" user-emacs-directory))
 
-(use-package nerd-icons
-  :ensure t)
+(use-package nerd-icons)
 
 (use-package doom-themes
   :custom
@@ -179,7 +181,6 @@
 
 ;; Plain-text system for notes, tasks, and literate programming
 (use-package org
-  :ensure t
   :config
 
   ;; Then load the shell backend
@@ -234,13 +235,11 @@
 
 ;; Display the keybindings following an incomplete command in a pop up
 (use-package which-key
-  :ensure t
   :config
   (which-key-mode))
 
 ;; Fast, on-screen navigation by character, word, or line
 (use-package avy
-  :ensure t
   :bind
   (("C-:"   . avy-goto-char)              ;; jump to a single char
    ("C-'"   . avy-goto-char-2)            ;; jump to a 2-char sequence
@@ -260,12 +259,10 @@
 
 ;; Vertical minibuffer completions
 (use-package vertico
-  :ensure t
   :init (vertico-mode))
 
 ;; Orderless completions
 (use-package orderless
-  :ensure t
   :custom
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
@@ -274,12 +271,10 @@
 
 ;; Annotations in minibuffer
 (use-package marginalia
-  :ensure t
   :init (marginalia-mode))
 
 ;; Commands & enhanced navigation
 (use-package consult
-  :ensure t
   :after orderless
   :init
   :bind (("M-x"         . execute-extended-command) ;; old M-x feel
@@ -292,7 +287,6 @@
 
 ;; Context actions
 (use-package embark
-  :ensure t
   :bind (("C-." . embark-act)
          ("C-;" . embark-dwim))
   :init (setq prefix-help-command #'embark-prefix-help-command))
@@ -300,7 +294,6 @@
 ;; Embark + Consult integration
 (use-package embark-consult
   :after (embark consult)
-  :ensure t
   :hook (embark-collect-mode . consult-preview-at-point-mode))
 
 ;; Persist minibuffer history across sessions
@@ -313,7 +306,6 @@
 
 ;; Async fuzzy finder
 (use-package affe
-  :ensure t
   :after consult
   :bind (("C-x p g" . affe-grep)
          ("C-x p G" . affe-grep-no-ignore)
@@ -325,7 +317,6 @@
 
 ;; In-buffer completion
 (use-package corfu
-  :ensure t
   :init
   (global-corfu-mode) ;; enable Corfu globally
   :bind (:map corfu-map
@@ -348,7 +339,6 @@
 
 ;; Extra completion sources
 (use-package cape
-  :ensure t
   :init
   ;; Add useful default completion sources
   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
@@ -357,7 +347,6 @@
 
 ;; Markdown & GitHub Flavored Markdown
 (use-package markdown-mode
-  :ensure t
   :mode (("\\.md\\'"       . gfm-mode)
          ("\\.markdown\\'" . markdown-mode)
          ("\\.text\\'"     . gfm-mode))
@@ -366,7 +355,6 @@
 
 ;; Enable Polymode.
 (use-package polymode
-  :ensure t
   :mode (("\\.Rmd\\'"   . poly-markdown+r-mode)
          ("\\.Rnw\\'"   . poly-noweb+r-mode)
          ("\\.Snw\\'"   . poly-noweb+r-mode))
@@ -385,8 +373,6 @@
 
 ;; Terminal emulation
 (use-package eat
-  :ensure t
-  :defer t
   :hook (eat-mode . my/terminal-hook)
   :custom
   (eat-term-name "xterm-256color")
@@ -395,14 +381,10 @@
   (eat-term-scrollback 10000))
 
 (use-package vterm
-  :ensure t
-  :defer t
   :hook (vterm-mode . my/terminal-hook))
 
 ;; Treemacs core
 (use-package treemacs
-  :ensure t
-  :defer t
   :init
   ;; Toggle with C-x t t
   (with-eval-after-load 'project
@@ -421,24 +403,20 @@
 
 ;; Magit integration
 (use-package treemacs-magit
-  :after (treemacs magit)
-  :ensure t)
+  :after (treemacs magit))
 
 (use-package all-the-icons
-  :if (display-graphic-p)
-  :ensure t)
+  :if (display-graphic-p))
 
 ;; Treemacs icons
 (use-package treemacs-all-the-icons
   :after treemacs
   :if (display-graphic-p)
-  :ensure t
   :config
   (treemacs-load-theme "all-the-icons"))
 
 ;; Tree-sitter auto management
 (use-package treesit-auto
-  :ensure t
   :config
   (setq treesit-auto-install 'prompt)
   (treesit-auto-add-to-auto-mode-alist 'python)
@@ -446,12 +424,10 @@
 
 ;; LSP client
 (use-package eglot
-  :ensure t
   :config)
 
 ;; Conda integration
 (use-package conda
-  :ensure t
   :config
   (setq conda-anaconda-home (expand-file-name "~/opt/homebrew/Caskroom/miniconda/"))
   (setq conda-env-home-directory conda-anaconda-home)
@@ -474,7 +450,6 @@
 
 ;; Version management
 (use-package pyvenv
-  :ensure t
   :config
   ;; Automatically activate a virtualenv if .venv exists in project root
   (add-hook 'python-ts-mode-hook
@@ -487,14 +462,12 @@
 
 ;; Black auto-format on save
 (use-package blacken
-  :ensure t
   :hook (python-ts-mode . blacken-mode)
   :config
   (setq blacken-line-length 88))
 
 ;; Debugging
 (use-package dap-mode
-  :ensure t
   :after python-ts-mode
   :config
   (require 'dap-python)
@@ -504,7 +477,6 @@
 ;;; Julia
 
 (use-package julia-ts-mode
-  :ensure t
   :mode "\\.jl$"
   :hook (julia-ts-mode . eglot-ensure)
   :config
@@ -553,7 +525,6 @@
 
 ;; Syntax checking with Flycheck (needs shellcheck)
 (use-package flycheck
-  :ensure t
   :hook (bash-ts-mode . flycheck-mode)
   :config
   (setq flycheck-sh-shellcheck-executable "shellcheck"))
@@ -567,7 +538,6 @@
 
 ;; Formatting (needs shfmt installed)
 (use-package shfmt
-  :ensure t
   :hook (bash-ts-mode . shfmt-on-save-mode)
   :config
   (setq shfmt-arguments '("-i" "2" "-ci")))
@@ -593,7 +563,6 @@
 
 ;; Geiser (Scheme)
 (use-package geiser
-  :ensure t
   :config
   (setq geiser-active-implementations '(mit)
         geiser-mit-binary "/usr/local/bin/mit-scheme")
@@ -601,7 +570,6 @@
 
 ;; Slime
 (use-package slime
-  :ensure t
   :init
   (setq inferior-lisp-program "/usr/local/bin/sbcl")
   :config
@@ -609,8 +577,6 @@
 
 ;; Clojure
 (use-package cider
-  :ensure t
-  :defer t
   :init (add-hook 'cider-mode-hook #'clj-refactor-mode)
   :diminish subword-mode
   :config
@@ -624,22 +590,3 @@
   (cider-repl-toggle-pretty-printing))
 
 ;;; init.el ends here
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(affe all-the-icons auctex avy bash-ts-mode blacken cape cider conda consult
-          corfu dap-mode doom-themes eat eglot embark embark-consult
-          exec-path-from-shell expand-region flycheck geiser julia-snail
-          julia-ts-mode magit marginalia markdown-mode nerd-icons orderless org
-          paredit poly-org polymode python-ts-mode pyvenv rainbow-delimiters
-          savehist shfmt slime treemacs treemacs-all-the-icons treemacs-magit
-          treesit-auto vertico vterm which-key yasnippet yasnippet-snippets)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
