@@ -6,7 +6,6 @@
 
 (setq package-selected-packages
       '(affe
-	all-the-icons
 	auctex
         avy
         bash-ts-mode
@@ -31,21 +30,15 @@
         magit
         marginalia
         markdown-mode
-	nerd-icons
         orderless
 	org
         paredit
-        poly-org
-        polymode
 	python-ts-mode
 	pyvenv
         rainbow-delimiters
         savehist
         shfmt
 	slime
-	treemacs
-	treemacs-all-the-icons
-	treemacs-magit
 	treesit-auto
         vertico
         vterm
@@ -113,8 +106,7 @@
         auto-save-file-name-transforms
         `((".*" ,(expand-file-name "auto-save/" user-emacs-directory) t)))
 
-  ;; Enable smooth per-pixel scrolling (introduced in Emacs v29.1).
-  ;; Makes trackpad/mouse-wheel scrolling fluid and precise.
+  ;; Enable smooth per-pixel scrolling (introduced in Emacs v29.1)
   (when (fboundp 'pixel-scroll-precision-mode)
     (pixel-scroll-precision-mode 1))
 
@@ -126,7 +118,7 @@
           mac-option-modifier  'meta
           frame-title-format nil)
 
-    ;; Switch theme with system appearance
+    ;; Switch theme wwith system appearance
     (add-hook 'ns-system-appearance-change-functions #'my/apply-theme)
 
     ;; Load PATH from shell
@@ -143,8 +135,6 @@
 (add-to-list 'custom-theme-load-path
              (expand-file-name "themes/rose-pine-doom-emacs" user-emacs-directory))
 
-(use-package nerd-icons)
-
 (use-package doom-themes
   :custom
   (doom-themes-enable-bold t)
@@ -152,10 +142,6 @@
   :config
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
-  ;; Enable custom neotree theme (nerd-icons must be installed!)
-  (doom-themes-neotree-config)
-  ;; or for treemacs users
-  (doom-themes-treemacs-config)
   ;; Corrects (and improves) org-mode's native fontification.
   (doom-themes-org-config))
 
@@ -170,9 +156,21 @@
     ('light (load-theme 'doom-rose-pine-dawn t))
     ('dark  (load-theme 'doom-rose-pine t))))
 
-(add-hook 'ns-system-appearance-change-functions #'my/apply-theme)
-
 ;;; Editing
+
+(use-package prog-mode
+  :ensure nil
+  :hook (prog-mode . (lambda ()
+                       (eldoc-mode 1))))
+
+(use-package text-mode
+  :ensure nil)
+
+(use-package minibuffer
+  :ensure nil
+  :hook (minibuffer-setup . (lambda ()
+                              (when (bound-and-true-p paredit-mode)
+                                (paredit-mode -1)))))
 
 ;; Quickly grow/shrink selection
 (use-package expand-region
@@ -195,43 +193,6 @@
         org-startup-indented t
         org-hide-leading-stars t
         org-ellipsis " ▾"))
-
-(defun my/prog-mode-hooks ()
-  "Settings applied to programming modes."
-  ;; Highlight current line
-  ;; (hl-line-mode)
-  ;; Show, in the echo area, the argument list of the function call you are
-  ;; currently writing.
-  (eldoc-mode 1)
-  ;; Show line numbers
-  ;; (display-line-numbers-mode)
-  ;; Display relative line numbers
-  ;; (setq display-line-numbers 'relative)
-  ;; Display an indiciation of the ‘fill-column’ position
-  ;; (display-fill-column-indicator-mode)
-  ;; Show indicator for empty lines at the end of the buffer
-  ;; (setq indicate-empty-lines t)
-  )
-
-(add-hook 'prog-mode-hook 'my/prog-mode-hooks)
-
-(defun my/text-mode-hooks ()
-  "Settings applied to text-centric modes."
-  ;; Highlight current line
-  ;; (hl-line-mode)
-  ;; Show indicator for empty lines at the end of the buffer
-  ;; (setq indicate-empty-lines t)
-  )
-
-(add-hook 'text-mode-hook 'my/text-mode-hooks)
-
-(defun my/minibuffer-setup-hooks ()
-  "Settings applied whenever a minibuffer is entered."
-  ;; Disable paredit in all minibuffers to avoid RET issues
-  (when (bound-and-true-p paredit-mode)
-    (paredit-mode -1)))
-
-(add-hook 'minibuffer-setup-hook #'my/minibuffer-setup-hooks)
 
 ;; Display the keybindings following an incomplete command in a pop up
 (use-package which-key
@@ -353,23 +314,14 @@
   :init
   (autoload 'gfm-mode "markdown-mode" "Major mode for editing GitHub Flavored Markdown" t))
 
-;; Enable Polymode.
-(use-package polymode
-  :mode (("\\.Rmd\\'"   . poly-markdown+r-mode)
-         ("\\.Rnw\\'"   . poly-noweb+r-mode)
-         ("\\.Snw\\'"   . poly-noweb+r-mode))
-  :config
-  ;; Enable smart indentation and highlighting
-  (setq poly-noweb-auto-indent t
-        poly-markdown-auto-indent t))
-
 (defun my/terminal-hook ()
   "Configuration for terminal buffers."
-  (setq-local scroll-conservatively 1000
-              scroll-step 1
-              scroll-margin 0
-              auto-window-vscroll nil
-              truncate-lines t))
+  (setq-local
+   scroll-conservatively 1000
+   scroll-step 1
+   scroll-margin 0
+   auto-window-vscroll nil
+   truncate-lines t))
 
 ;; Terminal emulation
 (use-package eat
@@ -382,38 +334,6 @@
 
 (use-package vterm
   :hook (vterm-mode . my/terminal-hook))
-
-;; Treemacs core
-(use-package treemacs
-  :init
-  ;; Toggle with C-x t t
-  (with-eval-after-load 'project
-    (define-key project-prefix-map (kbd "t") #'treemacs))
-  :config
-  (setq treemacs-width 50
-        treemacs-follow-after-init t
-        treemacs-collapse-dirs 3
-        treemacs-silent-refresh t
-        treemacs-is-never-other-window t
-        treemacs-sorting 'alphabetic-asc
-        treemacs-no-png-images t) ;; for terminal support
-  ;; Expand automatically
-  (treemacs-follow-mode t)
-  (treemacs-filewatch-mode t))
-
-;; Magit integration
-(use-package treemacs-magit
-  :after (treemacs magit))
-
-(use-package all-the-icons
-  :if (display-graphic-p))
-
-;; Treemacs icons
-(use-package treemacs-all-the-icons
-  :after treemacs
-  :if (display-graphic-p)
-  :config
-  (treemacs-load-theme "all-the-icons"))
 
 ;; Tree-sitter auto management
 (use-package treesit-auto
