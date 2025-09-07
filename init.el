@@ -18,7 +18,7 @@
 	dap-mode
         doom-themes
 	eat
-	eglot
+        eglot
         embark
         embark-consult
         exec-path-from-shell
@@ -31,15 +31,15 @@
         marginalia
         markdown-mode
         orderless
-	org
+        org
         paredit
-	python-ts-mode
-	pyvenv
+        python-ts-mode
+        pyvenv
         rainbow-delimiters
         savehist
         shfmt
-	slime
-	treesit-auto
+        slime
+        treesit-auto
         vertico
         vterm
         which-key
@@ -54,8 +54,8 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-(setq use-package-always-ensure t	; Install packages if missing
-      use-package-always-defer t)	; Load lazily unless explicitly demanded
+(setq use-package-always-ensure t       ; Install packages if missing
+      use-package-always-defer t)       ; Load lazily unless explicitly demanded
 
 ;;; Encoding
 
