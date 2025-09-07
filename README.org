@@ -4,7 +4,12 @@
 This repository contains my Emacs configuration files. It has been
 optimized and tested on macOS.
 
-* 📦 Installation
+** 🗺️ Map
+
+- [[#-installation][📦 Installation]]
+- [[#-license][📝 License]]
+
+** 📦 Installation
 
 *Install Emacs using Homebrew*:
 
@@ -37,7 +42,7 @@ To clone this repository into your Emacs configuration directory, type:
 The configuration will automatically bootstrap use-package and install
 all required packages.
 
-* 📝 License
+** 📝 License
 
 This configuration is distributed under the terms of the GNU General
 Public License v3.0.  See the file [[./LICENSE]] for details.
