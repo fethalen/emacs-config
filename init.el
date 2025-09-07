@@ -6,18 +6,18 @@
 
 (setq package-selected-packages
       '(affe
-	auctex
+        auctex
         avy
         bash-ts-mode
-	blacken
+        blacken
         cape
         cider
-	conda
+        conda
         consult
         corfu
-	dap-mode
+        dap-mode
         doom-themes
-	eat
+        eat
         eglot
         embark
         embark-consult
@@ -365,7 +365,7 @@
   :hook (python-ts-mode . eglot-ensure)
   :config
   (setq eglot-workspace-configuration
-      '(:pyright (:python.analysis.typeCheckingMode "off")))
+        '(:pyright (:python.analysis.typeCheckingMode "off")))
 
   ;; Tell Eglot to use pyright as the LSP server
   (add-to-list 'eglot-server-programs
@@ -467,7 +467,7 @@
 
 ;; Consult integration
 (use-package consult
-  :bind (("C-c f" . consult-flycheck)))	;; Syntax checking with Flycheck (requires shellcheck installed)
+  :bind (("C-c f" . consult-flycheck)))         ;; Syntax checking with Flycheck (requires shellcheck installed)
 
 ;;; Lisp
 
