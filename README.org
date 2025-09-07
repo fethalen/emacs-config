@@ -1,12 +1,12 @@
-#+title: Felicia's Emacs Configuration
+#+title: Felicia's Emacs Configuration 🐃
 #+author: Felicia Sandberg
 
 This repository contains my Emacs configuration files. It has been
 optimized and tested on macOS.
 
-* Installation
+* 📦 Installation
 
-1. *Install Emacs using Homebrew*:
+*Install Emacs using Homebrew*:
 
 I use the Homebrew Formula [[https://github.com/d12frosted/homebrew-emacs-plus][Emacs+]] to install Emacs. Type the following
 to install the current latest release of Emacs (30.1 as of writing):
@@ -16,7 +16,7 @@ to install the current latest release of Emacs (30.1 as of writing):
   brew install emacs-plus
 #+end_src
 
-2. *Backup your existing configuration*:
+*Backup your existing configuration*:
 
 If you already have configured Emacs before, backup your old configuration like so:
 
@@ -24,7 +24,7 @@ If you already have configured Emacs before, backup your old configuration like 
   mv ~/.emacs.d ~/.emacs.d.bak
 #+end_src
 
-3. *Clone this repository*:
+*Clone this repository*:
 
 To clone this repository into your Emacs configuration directory, type:
 
@@ -32,7 +32,12 @@ To clone this repository into your Emacs configuration directory, type:
   git clone https://github.com/fethalen/emacs-config.git ~/.emacs.d
 #+end_src
 
-4. *Launch Emacs*:
+*Launch Emacs*:
 
 The configuration will automatically bootstrap use-package and install
 all required packages.
+
+* 📝 License
+
+This configuration is distributed under the terms of the GNU General
+Public License v3.0.  See the file [[./LICENSE]] for details.
