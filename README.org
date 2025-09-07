@@ -1,7 +1,7 @@
 #+title: Felicia's Emacs Configuration 🐃
 #+author: Felicia Sandberg
 
-This repository contains my Emacs configuration files. It has been
+This repository contains my Emacs configuration files. They have been
 optimized for, and tested on, macOS.
 
 ** 🗺️ Map
