@@ -118,7 +118,7 @@
           mac-option-modifier  'meta
           frame-title-format nil)
 
-    ;; Switch theme wwith system appearance
+    ;; Switch theme with system appearance
     (add-hook 'ns-system-appearance-change-functions #'my/apply-theme)
 
     ;; Load PATH from shell
@@ -179,6 +179,7 @@
 
 ;; Plain-text system for notes, tasks, and literate programming
 (use-package org
+  :ensure nil
   :config
 
   ;; Then load the shell backend
@@ -259,6 +260,7 @@
 
 ;; Persist minibuffer history across sessions
 (use-package savehist
+  :ensure nil
   :init
   (setq history-length 1000
         history-delete-duplicates t
@@ -344,6 +346,7 @@
 
 ;; LSP client
 (use-package eglot
+  :ensure nil
   :config)
 
 ;; Conda integration
@@ -397,10 +400,10 @@
 ;;; Julia
 
 (use-package julia-ts-mode
-  :mode "\\.jl$"
+  :mode "\\.jl\\'"
   :hook (julia-ts-mode . eglot-ensure)
   :config
-  ;; Tell eglot how to start Julia LSP
+  ;; Tell Eglot how to start Julia LSP
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
                  '(julia-ts-mode . ("julia"
@@ -409,7 +412,7 @@
                                     "-e" "using LanguageServer, SymbolServer; runserver()")))))
 
 (use-package julia-snail
-  :after julia-snail-mode eat
+  :after eat
   :hook (julia-ts-mode . julia-snail-mode)
   :config
   (setq julia-snail-terminal-type 'eat))
