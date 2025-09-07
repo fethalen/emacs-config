@@ -2,7 +2,7 @@
 #+author: Felicia Sandberg
 
 This repository contains my Emacs configuration files. It has been
-optimized and tested on macOS.
+optimized for, and tested on, macOS.
 
 ** 🗺️ Map
 
