@@ -1,0 +1,30 @@
+# Emacs state/cache
+recentf
+savehist
+places
+history
+projects
+smex-items
+transient/
+tramp
+.cache/
+
+# Package managers
+elpa/
+straight/
+tree-sitter/
+
+# Autosaves, backups, lockfiles
+auto-save-list/
+backups/
+*.~*
+\#*\#
+.#*
+
+# Compilation artifacts
+*.elc
+eln-cache/
+
+# maccOS cruft (macOS / Windows)
+.DS_Store
+Thumbs.db
