@@ -67,8 +67,17 @@
 
 ;;; General
 
+;; On macOS, GUI Emacs does not inherit the shell environment. This
+;; ensures that Emacs gets the same PATH as your terminal.
+(use-package exec-path-from-shell
+  :demand t
+  :init
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
+
 ;; Core Emacs settings
 (use-package emacs
+  :ensure nil
   :init
   (show-paren-mode 1)                   ; Highlight matching parens
   (electric-pair-mode 1)                ; Auto-close pairs
@@ -119,12 +128,7 @@
           frame-title-format nil)
 
     ;; Switch theme with system appearance
-    (add-hook 'ns-system-appearance-change-functions #'my/apply-theme)
-
-    ;; Load PATH from shell
-    (use-package exec-path-from-shell
-      :config
-      (exec-path-from-shell-initialize))))
+    (add-hook 'ns-system-appearance-change-functions #'my/apply-theme)))
 
 ;; Enable mouse usage when running in a terminal.
 (unless window-system
