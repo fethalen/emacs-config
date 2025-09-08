@@ -25,6 +25,6 @@ backups/
 *.elc
 eln-cache/
 
-# maccOS cruft (macOS / Windows)
+# OS cruft (macOS / Windows)
 .DS_Store
 Thumbs.db
