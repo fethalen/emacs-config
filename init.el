@@ -68,12 +68,16 @@
 ;;; General
 
 ;; On macOS, GUI Emacs does not inherit the shell environment. This
-;; ensures that Emacs gets the same PATH as your terminal.
+;; ensures that GUI frames on macOS/X11 gets the same PATH as your
+;; terminal.
 (use-package exec-path-from-shell
   :demand t
-  :init
-  (when (memq window-system '(mac ns x))
-    (exec-path-from-shell-initialize)))
+  :if (memq window-system '(mac ns x))
+  :config
+  ;; Use a non-interactive shell (faster)
+  (setq exec-path-from-shell-arguments '("-l"))
+  ;; Initialize environment from the user's shell
+  (exec-path-from-shell-initialize))
 
 ;; Core Emacs settings
 (use-package emacs
@@ -185,18 +189,25 @@
 (use-package org
   :ensure nil
   :config
+  (defun my/org-babel-ansi-color ()
+    "Apply ANSI color codes in the current Org babel result."
+    (let ((inhibit-read-only t))
+      (ansi-color-apply-on-region (point-min) (point-max))))
 
-  ;; Then load the shell backend
+  (add-hook 'org-babel-after-execute-hook #'my/org-babel-ansi-color)
+
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((shell . t)))
 
+  (setq org-src-fontify-natively t
+	org-src-tab-acts-natively t
+	org-confirm-babel-evaluate nil)
+
   (setq org-directory "~/org"
         org-agenda-files '("~/org/tasks.org" "~/org/projects.org")
         org-default-notes-file "~/org/inbox.org"
-        org-log-done 'time
         org-startup-indented t
-        org-hide-leading-stars t
         org-ellipsis " ▾"))
 
 ;; Display the keybindings following an incomplete command in a pop up
@@ -320,16 +331,53 @@
   :init
   (autoload 'gfm-mode "markdown-mode" "Major mode for editing GitHub Flavored Markdown" t))
 
+(use-package tramp
+  :ensure nil
+  :config
+  (setq
+   ;; Don't create lock files on remote systems
+   remote-file-name-inhibit-locks t
+   ;; Disable auto-saving of remote buffers
+   remote-file-name-inhibit-auto-save-visited t
+   ;; Use an external tool to move files exceeding the file size limit
+   tramp-copy-size-limit (* 1024 1024) ;; 1MB
+   ;; Verbosity level for TRAMP messages:
+   ;; 0 = silent, 1 = errors only, 2 = warnings,
+   ;; 3 = info (default), 6 = debug (very noisy).
+   tramp-verbose 1
+   ;;Default to SSH
+   tramp-default-method "ssh"
+   ;; Tell Magit to use a pseudo-terminal (pty) for TRAMP pipes
+   magit-tramp-pipe-stty-settings 'pty)
+
+  ;; Enable TRAMP direct async process mode for faster remote command execution
+  (connection-local-set-profile-variables
+   'remote-direct-async-process
+   '((tramp-direct-async-process . t)))
+
+  ;; Apply the above profile to all TRAMP connections using the "scp" protocol
+  (connection-local-set-profiles
+   '(:application tramp :protocol "scp")
+   'remote-direct-async-process)
+
+  ;; Tell Magit to use a pseudo-terminal (pty) for TRAMP pipes
+  (setq magit-tramp-pipe-stty-settings 'pty)
+
+  ;; Use remote PATH over local one
+  (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
+
+;; Terminal emulation
 (defun my/terminal-hook ()
   "Configuration for terminal buffers."
   (setq-local
+   line-number-mode nil
+   column-number-mode nil
    scroll-conservatively 1000
    scroll-step 1
    scroll-margin 0
    auto-window-vscroll nil
    truncate-lines t))
 
-;; Terminal emulation
 (use-package eat
   :hook (eat-mode . my/terminal-hook)
   :custom
@@ -425,30 +473,27 @@
 
 (defun my/shell-hook ()
   "Settings applied when editing shell scripts."
-  ;; Use 2 spaces for indentation
-  (setq sh-basic-offset 2
-        sh-indentation 2)
-  ;; Make << insert a here document skeleton
-  (sh-electric-here-document-mode 1)
-  (use-local-map (copy-keymap sh-mode-map))
-  (set-keymap-parent (current-local-map) sh-mode-map))
+  (setq-local tab-width 2
+              indent-tabs-mode nil
+              sh-basic-offset 2
+              sh-indentation 2))
 
 ;; Tree-sitter based Bash mode
 (use-package bash-ts-mode
   :ensure nil
-  :mode ("\\.\\(sh\\|bash\\|zsh\\)\\'" . bash-ts-mode)
   :interpreter (("bash" . bash-ts-mode)
                 ("sh"   . bash-ts-mode)
                 ("zsh"  . bash-ts-mode))
-  :hook (bash-ts-mode . my/shell-hook)
+  :hook ((bash-ts-mode . my/shell-hook)
+	 (bash-ts-mode . eglot-ensure))
   :init
-  ;; Derive sh-mode features in bash-ts-mode
+  ;; Let bash-ts-mode derive features from sh-mode
   (put 'bash-ts-mode 'derived-mode-parent 'sh-mode)
   :config
+
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
-                 '(bash-ts-mode . ("bash-language-server" "start"))))
-  (add-hook 'bash-ts-mode-hook #'eglot-ensure))
+                 '(bash-ts-mode . ("bash-language-server" "start")))))
 
 ;; Syntax checking with Flycheck (needs shellcheck)
 (use-package flycheck
@@ -471,7 +516,7 @@
 
 ;; Consult integration
 (use-package consult
-  :bind (("C-c f" . consult-flycheck)))         ;; Syntax checking with Flycheck (requires shellcheck installed)
+  :bind (("C-c f" . consult-flycheck)))
 
 ;;; Lisp
 

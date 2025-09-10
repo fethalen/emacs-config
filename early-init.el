@@ -50,6 +50,10 @@
 
 (setq default-input-method nil)         ; Don't assume any input method as the
                                         ; default
+
+;; Suppress native compilation warnings
+(setq native-comp-async-report-warnings-errors nil)
+
 (provide 'early-init)
 
 ;;; early-init.el ends here
