@@ -41,7 +41,6 @@
         slime
         tempel
         tempel-collection
-        treesit-auto
         vertico
         vterm
         which-key
@@ -405,16 +404,12 @@
 	   '((sh-mode . bash-ts-mode)
 	     (sh-base-mode . bash-ts-mode)
 	     (bash-mode . bash-ts-mode)
-	     (python-mode . python-ts-mode)))))
-
-;; Tree-sitter auto management
-(use-package treesit-auto
-  :demand t
-  :after treesit
+	     (python-mode . python-ts-mode))))
   :config
-  (setq treesit-auto-install 'prompt)
-  (treesit-auto-add-to-auto-mode-alist 'python)
-  (global-treesit-auto-mode))
+  (setq treesit-language-source-alist
+        '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+          (zsh  "https://github.com/nvim-treesitter/tree-sitter-zsh")
+          (fish "https://github.com/ram02z/tree-sitter-fish"))))
 
 ;; LSP client
 (use-package eglot
@@ -497,6 +492,11 @@
   (when (eq (cdr entry) 'sh-mode)
     (setcdr entry 'bash-ts-mode)))
 
+(defun my/shell-hook ()
+  "Settings applied when editing shell scripts."
+  (setq-local indent-tabs-mode nil
+	      sh-basic-offset 2))
+
 ;; Tree-sitter based Bash mode
 (use-package bash-ts-mode
   :ensure nil
@@ -510,11 +510,6 @@
   ;; Let bash-ts-mode derive features from sh-mode
   (put 'bash-ts-mode 'derived-mode-parent 'sh-mode)
   :config
-  (defun my/shell-hook ()
-    "Settings applied when editing shell scripts."
-    (setq-local indent-tabs-mode nil
-		sh-basic-offset 2))
-
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
                  '(bash-ts-mode . ("bash-language-server" "start")))))
@@ -555,6 +550,10 @@
   :bind (("C-c f" . consult-flycheck)))
 
 ;;; Lisp
+
+(use-package paredit)
+
+(use-package rainbow-delimiters)
 
 (defun my/lisp-hook ()
   "Minor modes for various Lisp modes."
@@ -598,23 +597,3 @@
   (cider-repl-toggle-pretty-printing))
 
 ;;; init.el ends here
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(affe auctex avy bash-ts-mode blacken cape cider conda consult corfu
-	  dap-mode doom-themes eat eglot embark embark-consult
-	  exec-path-from-shell expand-region flycheck geiser
-	  julia-snail julia-ts-mode magit marginalia markdown-mode
-	  orderless org paredit python-ts-mode pyvenv
-	  rainbow-delimiters savehist shfmt slime tempel
-	  tempel-collection treesit-auto vertico vterm which-key
-	  yasnippet yasnippet-snippets)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
