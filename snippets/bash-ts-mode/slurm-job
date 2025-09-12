@@ -1,0 +1,29 @@
+# -*- mode: snippet -*-
+# name: slurm-job
+# key: slurm
+# --
+#!/bin/bash
+#SBATCH --job-name=${1:jobname}
+#SBATCH --output=%x_%j.out
+#SBATCH --error=%x_%j.err
+# Maximum wall-clock runtime in dd-hh:mm:ss (days-hours:minutes:seconds)
+#SBATCH --time=${2:00-01:00:00}
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=${3:1}
+# Memory per CPU core (RAM), unit suffix allowed (K,M,G,T)
+#SBATCH --mem-per-cpu=${4:4G}
+
+echo "=== Job started on: $(date)"
+echo "Job ID: $SLURM_JOB_ID  Nodes: $SLURM_JOB_NODELIST"
+
+${0:## Your commands here ##}
+
+echo "=== Job finished on: $(date)"
+
+# Report resource usage
+if command -v seff &>/dev/null; then
+    seff $SLURM_JOB_ID
+else
+    sacct -j $SLURM_JOB_ID --format=JobID,JobName%20,Elapsed,State,MaxRSS,ExitCode
+fi

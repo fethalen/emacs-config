@@ -39,6 +39,8 @@
         savehist
         shfmt
         slime
+        tempel
+        tempel-collection
         treesit-auto
         vertico
         vterm
@@ -188,20 +190,27 @@
 ;; Plain-text system for notes, tasks, and literate programming
 (use-package org
   :ensure nil
+  :hook (org-babel-after-execute . my/org-babel-ansi-color)
+  :bind (:map org-mode-map
+              ("C-c C-r" . my/org-babel-restart-session))
   :config
   (defun my/org-babel-ansi-color ()
     "Apply ANSI color codes in the current Org babel result."
     (let ((inhibit-read-only t))
       (ansi-color-apply-on-region (point-min) (point-max))))
 
-  (add-hook 'org-babel-after-execute-hook #'my/org-babel-ansi-color)
-
+  ;; Enable execution of shell scripts in Org Babel code blocks
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((shell . t)))
 
+  ;; Use bash-ts-mode as the editor mode for shell code blocks
+  (dolist (lang '("sh" "shell" "bash" "zsh"))
+    (add-to-list 'org-src-lang-modes `(,lang . bash-ts)))
+
   (setq org-src-fontify-natively t
 	org-src-tab-acts-natively t
+	org-edit-src-content-indentation 0
 	org-confirm-babel-evaluate nil)
 
   (setq org-directory "~/org"
@@ -389,8 +398,19 @@
 (use-package vterm
   :hook (vterm-mode . my/terminal-hook))
 
+(use-package treesit
+  :ensure nil
+  :preface
+  (dolist (mapping
+	   '((sh-mode . bash-ts-mode)
+	     (sh-base-mode . bash-ts-mode)
+	     (bash-mode . bash-ts-mode)
+	     (python-mode . python-ts-mode)))))
+
 ;; Tree-sitter auto management
 (use-package treesit-auto
+  :demand t
+  :after treesit
   :config
   (setq treesit-auto-install 'prompt)
   (treesit-auto-add-to-auto-mode-alist 'python)
@@ -471,16 +491,16 @@
 
 ;;; Shell
 
-(defun my/shell-hook ()
-  "Settings applied when editing shell scripts."
-  (setq-local tab-width 2
-              indent-tabs-mode nil
-              sh-basic-offset 2
-              sh-indentation 2))
+;; Use bash-ts-mode over sh-mode for any files associated with that
+;; mode
+(dolist (entry auto-mode-alist)
+  (when (eq (cdr entry) 'sh-mode)
+    (setcdr entry 'bash-ts-mode)))
 
 ;; Tree-sitter based Bash mode
 (use-package bash-ts-mode
   :ensure nil
+  :mode "\\.\\(?:sh\\|bash\\|zsh\\)$"
   :interpreter (("bash" . bash-ts-mode)
                 ("sh"   . bash-ts-mode)
                 ("zsh"  . bash-ts-mode))
@@ -490,6 +510,10 @@
   ;; Let bash-ts-mode derive features from sh-mode
   (put 'bash-ts-mode 'derived-mode-parent 'sh-mode)
   :config
+  (defun my/shell-hook ()
+    "Settings applied when editing shell scripts."
+    (setq-local indent-tabs-mode nil
+		sh-basic-offset 2))
 
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
@@ -503,10 +527,22 @@
 
 ;; Snippets
 (use-package yasnippet
-  :hook (bash-ts-mode . yas-minor-mode))
+  :hook (bash-ts-mode . yas-minor-mode)
+  :config
+  (yas-reload-all))
 
 (use-package yasnippet-snippets
   :after yasnippet)
+
+(use-package tempel
+  :bind (("M-+" . tempel-complete) ;; alternative to Yasnippet expansion
+         ("M-*" . tempel-insert))  ;; prompt for template and insert
+  :custom
+  ;; Default templates
+  (tempel-path (expand-file-name "templates.eld" user-emacs-directory)))
+
+(use-package tempel-collection
+  :after tempel) ;; optional pre-built collection
 
 ;; Formatting (needs shfmt installed)
 (use-package shfmt
@@ -562,3 +598,23 @@
   (cider-repl-toggle-pretty-printing))
 
 ;;; init.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(affe auctex avy bash-ts-mode blacken cape cider conda consult corfu
+	  dap-mode doom-themes eat eglot embark embark-consult
+	  exec-path-from-shell expand-region flycheck geiser
+	  julia-snail julia-ts-mode magit marginalia markdown-mode
+	  orderless org paredit python-ts-mode pyvenv
+	  rainbow-delimiters savehist shfmt slime tempel
+	  tempel-collection treesit-auto vertico vterm which-key
+	  yasnippet yasnippet-snippets)))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

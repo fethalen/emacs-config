@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: eth-proxy
+# key: eth-proxy
+# --
+# Enable access to external services
+module load eth_proxy

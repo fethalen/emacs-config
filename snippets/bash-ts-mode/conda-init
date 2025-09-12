@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: conda-init
+# key: conda-init
+# --
+# Initialize Conda
+source /cluster/home/fsandberg/miniconda3/etc/profile.d/conda.sh

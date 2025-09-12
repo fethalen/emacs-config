@@ -1,0 +1,37 @@
+# -*- mode: snippet -*-
+# name: slurm-job-moshpit
+# key: slurm-mosh
+# --
+#!/bin/bash
+#SBATCH --job-name=${1:jobname}
+#SBATCH --output=%x_%j.out
+#SBATCH --error=%x_%j.err
+# Maximum wall-clock runtime in dd-hh:mm:ss (days-hours:minutes:seconds)
+#SBATCH --time=${2:00-01:00:00}
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=${3:1}
+# Memory per CPU core (RAM), unit suffix allowed (K,M,G,T)
+#SBATCH --mem-per-cpu=${4:4G}
+
+echo "=== Job started on: $(date)"
+echo "Job ID: $SLURM_JOB_ID  Nodes: $SLURM_JOB_NODELIST"
+
+# Enable access to external services (uncommented if needed)
+# module load eth_proxy
+
+# Initialize Conda
+source /cluster/home/fsandberg/miniconda3/etc/profile.d/conda.sh
+
+# Activate Conda environment
+conda activate qiime2-moshpit-2025.10
+
+# Specify the location of the cache directory
+readonly CACHE="${SCRATCH}/mosh_cache"
+
+# Create the cache directory if it doesn't already exist
+[[ -d "$CACHE" ]] || mosh tools cache-create --cache "$CACHE"
+
+${0:## Your commands here ##}
+
+echo "=== Job finished on: $(date)"
