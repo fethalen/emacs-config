@@ -88,12 +88,16 @@
   (electric-pair-mode 1)                ; Auto-close pairs
   (defalias 'yes-or-no-p 'y-or-n-p)
   :hook
-  ((text-mode . visual-line-mode)
-   (before-save . delete-trailing-whitespace))
-  :config
+  (
+   ;; Soft-wrap long lines at word boundaries and move by visual lines
+   (text-mode . visual-line-mode)
+   ;; Remove trailing whitespace in buffer upon save
+   (before-save . delete-trailing-whitespace)
+   ;; Make script executable if hash-bang is found
+   (after-save . executable-make-buffer-file-executable-if-script-p))
+   :config
   (setq
    ;; Cursor & feedback
-   cursor-type 'box
    visible-bell t
    column-number-mode t
    echo-keystrokes 0
@@ -120,6 +124,10 @@
         auto-save-file-name-transforms
         `((".*" ,(expand-file-name "auto-save/" user-emacs-directory) t)))
 
+    ;; Enable mouse usage when running in a terminal.
+  (unless window-system
+    (xterm-mouse-mode))
+
   ;; Enable smooth per-pixel scrolling (introduced in Emacs v29.1)
   (when (fboundp 'pixel-scroll-precision-mode)
     (pixel-scroll-precision-mode 1))
@@ -134,10 +142,6 @@
 
     ;; Switch theme with system appearance
     (add-hook 'ns-system-appearance-change-functions #'my/apply-theme)))
-
-;; Enable mouse usage when running in a terminal.
-(unless window-system
-  (xterm-mouse-mode))
 
 ;;; Appearance
 
@@ -204,7 +208,7 @@
    '((shell . t)))
 
   ;; Use bash-ts-mode as the editor mode for shell code blocks
-  (dolist (lang '("sh" "shell" "bash" "zsh"))
+  (dolist (lang '("sh" "shell" "bash"))
     (add-to-list 'org-src-lang-modes `(,lang . bash-ts)))
 
   (setq org-src-fontify-natively t
@@ -220,6 +224,8 @@
 
 ;; Display the keybindings following an incomplete command in a pop up
 (use-package which-key
+  :ensure nil
+  :demand t
   :config
   (which-key-mode))
 
