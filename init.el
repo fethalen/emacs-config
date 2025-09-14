@@ -94,7 +94,7 @@
    (before-save . delete-trailing-whitespace)
    ;; Make script executable if hash-bang is found
    (after-save . executable-make-buffer-file-executable-if-script-p))
-   :config
+  :config
   (setq
    ;; Cursor & feedback
    visible-bell t
@@ -123,7 +123,7 @@
         auto-save-file-name-transforms
         `((".*" ,(expand-file-name "auto-save/" user-emacs-directory) t)))
 
-    ;; Enable mouse usage when running in a terminal.
+  ;; Enable mouse usage when running in a terminal.
   (unless window-system
     (xterm-mouse-mode))
 
@@ -495,7 +495,10 @@
 
 ;; Set default shell to bash if available
 (when-let ((bash-bin (executable-find "/bin/bash")))
-  (setq-default sh-shell-file bash-bin))
+  (setq sh-shell-file bash-bin
+	shell-file-name bash-bin
+	explicit-shell-file-name bash-bin)
+  (setenv "SHELL" bash-bin))
 
 ;; Use bash-ts-mode over sh-mode for files associated with that mode
 (dolist (entry auto-mode-alist)
@@ -526,7 +529,7 @@
     (add-to-list 'eglot-server-programs
                  '(bash-ts-mode . ("bash-language-server" "start")))))
 
-;; Formatting (needs shfmt installed)
+;; Formatting (requires shfmt)
 (use-package shfmt
   :hook (bash-ts-mode . shfmt-on-save-mode)
   :config
