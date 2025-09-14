@@ -499,6 +499,12 @@
 
 ;;; Shell
 
+;; Use bash-ts-mode over sh-mode for any files associated with that
+;; mode
+(dolist (entry auto-mode-alist)
+  (when (eq (cdr entry) 'sh-mode)
+    (setcdr entry 'bash-ts-mode)))
+
 (defun my/shell-hook ()
   "Settings applied when editing shell scripts."
   (setq-local indent-tabs-mode nil
