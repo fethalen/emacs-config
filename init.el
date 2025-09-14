@@ -215,13 +215,8 @@
     (setf (alist-get "zsh"  org-src-lang-modes nil nil #'equal) 'zsh-ts)
     (setf (alist-get "sh"   org-src-lang-modes nil nil #'equal) 'bash-ts))
 
-  ;; Don’t let sh-script second-guess the shell
-  (setq sh-shell-file "bash")
-
-  (setq ;; org-src-fontify-natively t
-   ;; org-src-tab-acts-natively t
-   ;; org-edit-src-content-indentation 0
-   org-confirm-babel-evaluate nil)
+  ;; Do not ask for confirmation before evaluating code blocks
+  (setq org-confirm-babel-evaluate nil)
 
   (setq org-directory "~/org"
         org-agenda-files '("~/org/tasks.org" "~/org/projects.org")
@@ -510,13 +505,20 @@
   (setq-local indent-tabs-mode nil
 	      sh-basic-offset 2))
 
+(use-package sh-script
+  :ensure nil
+  :config
+  ;; Change default shell file to Bash if available
+  (when-let* ((bash-bin (executable-find "/bin/bash")))
+    (setq-default sh-shell-file bash-bin)))
+
 ;; Tree-sitter based Bash mode
 (use-package bash-ts-mode
   :ensure nil
   :mode "\\.\\(?:sh\\|bash\\)$"
   :interpreter (("bash" . bash-ts-mode)
                 ("sh"   . bash-ts-mode))
-  :hook ((bash-ts-mode . my/shell-hook)
+  :hook (;; (bash-ts-mode . my/shell-hook)
 	 (bash-ts-mode . eglot-ensure))
   :init
   ;; Let bash-ts-mode derive features from sh-mode
