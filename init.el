@@ -509,7 +509,8 @@
   "Settings applied when editing shell scripts."
   (setq-local indent-tabs-mode nil
 	      sh-basic-offset 2
-	      sh-indentation 2))
+	      sh-indentation 2
+	      sh-indent-commen t))
 
 ;; Tree-sitter based Bash mode
 (use-package bash-ts-mode
