@@ -207,14 +207,21 @@
    'org-babel-load-languages
    '((shell . t)))
 
-  ;; Use bash-ts-mode as the editor mode for shell code blocks
-  (dolist (lang '("sh" "shell" "bash"))
-    (add-to-list 'org-src-lang-modes `(,lang . bash-ts)))
+  ;; Use the appropriate Tree-sitter mode for shell code blocks
+  (dolist (lang '("sh" "bash" "shell" "ash" "jsh" "bash2" "dash" "dtksh"
+                  "ksh" "es" "rc" "itcsh" "tcsh" "jcsh" "csh" "ksh88"
+                  "oash" "pdksh" "mksh" "posix" "wksh" "wsh" "zsh" "rpm"))
+    (setf (alist-get lang org-src-lang-modes nil nil #'equal) 'bash-ts)
+    (setf (alist-get "zsh"  org-src-lang-modes nil nil #'equal) 'zsh-ts)
+    (setf (alist-get "sh"   org-src-lang-modes nil nil #'equal) 'bash-ts))
 
-  (setq org-src-fontify-natively t
-	org-src-tab-acts-natively t
-	org-edit-src-content-indentation 0
-	org-confirm-babel-evaluate nil)
+  ;; Don’t let sh-script second-guess the shell
+  (setq sh-shell-file "bash")
+
+  (setq ;; org-src-fontify-natively t
+   ;; org-src-tab-acts-natively t
+   ;; org-edit-src-content-indentation 0
+   org-confirm-babel-evaluate nil)
 
   (setq org-directory "~/org"
         org-agenda-files '("~/org/tasks.org" "~/org/projects.org")
@@ -492,12 +499,6 @@
 
 ;;; Shell
 
-;; Use bash-ts-mode over sh-mode for any files associated with that
-;; mode
-(dolist (entry auto-mode-alist)
-  (when (eq (cdr entry) 'sh-mode)
-    (setcdr entry 'bash-ts-mode)))
-
 (defun my/shell-hook ()
   "Settings applied when editing shell scripts."
   (setq-local indent-tabs-mode nil
@@ -506,10 +507,9 @@
 ;; Tree-sitter based Bash mode
 (use-package bash-ts-mode
   :ensure nil
-  :mode "\\.\\(?:sh\\|bash\\|zsh\\)$"
+  :mode "\\.\\(?:sh\\|bash\\)$"
   :interpreter (("bash" . bash-ts-mode)
-                ("sh"   . bash-ts-mode)
-                ("zsh"  . bash-ts-mode))
+                ("sh"   . bash-ts-mode))
   :hook ((bash-ts-mode . my/shell-hook)
 	 (bash-ts-mode . eglot-ensure))
   :init
