@@ -23,7 +23,6 @@
         embark-consult
         exec-path-from-shell
         expand-region
-        flycheck
         geiser
         julia-snail
         julia-ts-mode
@@ -494,8 +493,11 @@
 
 ;;; Shell
 
-;; Use bash-ts-mode over sh-mode for any files associated with that
-;; mode
+;; Set default shell to bash if available
+(when-let ((bash-bin (executable-find "/bin/bash")))
+  (setq-default sh-shell-file bash-bin))
+
+;; Use bash-ts-mode over sh-mode for files associated with that mode
 (dolist (entry auto-mode-alist)
   (when (eq (cdr entry) 'sh-mode)
     (setcdr entry 'bash-ts-mode)))
@@ -503,14 +505,8 @@
 (defun my/shell-hook ()
   "Settings applied when editing shell scripts."
   (setq-local indent-tabs-mode nil
-	      sh-basic-offset 2))
-
-(use-package sh-script
-  :ensure nil
-  :config
-  ;; Change default shell file to Bash if available
-  (when-let* ((bash-bin (executable-find "/bin/bash")))
-    (setq-default sh-shell-file bash-bin)))
+	      sh-basic-offset 2
+	      sh-indentation 2))
 
 ;; Tree-sitter based Bash mode
 (use-package bash-ts-mode
@@ -518,23 +514,26 @@
   :mode "\\.\\(?:sh\\|bash\\)$"
   :interpreter (("bash" . bash-ts-mode)
                 ("sh"   . bash-ts-mode))
-  :hook (;; (bash-ts-mode . my/shell-hook)
-	 (bash-ts-mode . eglot-ensure))
+  :hook ((bash-ts-mode . my/shell-hook)
+	 ;; Syntax checking (requires shellcheck)
+	 (bash-ts-mode . flymake-mode))
   :init
   ;; Let bash-ts-mode derive features from sh-mode
   (put 'bash-ts-mode 'derived-mode-parent 'sh-mode)
   :config
+  ;; Register LSP server
   (with-eval-after-load 'eglot
     (add-to-list 'eglot-server-programs
                  '(bash-ts-mode . ("bash-language-server" "start")))))
 
-;; Syntax checking with Flycheck (needs shellcheck)
-(use-package flycheck
-  :hook (bash-ts-mode . flycheck-mode)
+;; Formatting (needs shfmt installed)
+(use-package shfmt
+  :hook (bash-ts-mode . shfmt-on-save-mode)
   :config
-  (setq flycheck-sh-shellcheck-executable "shellcheck"))
+  (setq shfmt-arguments '("-i" "2" "-ci")))
 
-;; Snippets
+;;; Snippets
+
 (use-package yasnippet
   :hook (bash-ts-mode . yas-minor-mode)
   :config
@@ -552,16 +551,6 @@
 
 (use-package tempel-collection
   :after tempel) ;; optional pre-built collection
-
-;; Formatting (needs shfmt installed)
-(use-package shfmt
-  :hook (bash-ts-mode . shfmt-on-save-mode)
-  :config
-  (setq shfmt-arguments '("-i" "2" "-ci")))
-
-;; Consult integration
-(use-package consult
-  :bind (("C-c f" . consult-flycheck)))
 
 ;;; Lisp
 
