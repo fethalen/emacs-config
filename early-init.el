@@ -43,8 +43,14 @@
 
 ;; macOS-specific frame settings
 (when (eq system-type 'darwin)
+  ;; Light appearance
   (add-to-list 'default-frame-alist '(ns-appearance . light))
-  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t)))
+  ;; Transparent titlebar
+  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+  ;; Remove proxy icon in titlebar
+  (add-to-list 'default-frame-alist '(ns-use-proxy-icon . nil))
+  ;; Remove shadow around titlebar
+  (add-to-list 'default-frame-alist '(ns-titlebar-transparent . t)))
 
 ;;; Miscellaneous
 
