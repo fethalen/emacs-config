@@ -433,6 +433,7 @@
 	  (gitignore "https://github.com/shunsambongi/tree-sitter-gitignore")
 	  (gnuplot "https://github.com/dpezto/tree-sitter-gnuplot")
 	  (html "https://github.com/tree-sitter/tree-sitter-html")
+	  (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
 	  (json "https://github.com/tree-sitter/tree-sitter-json")
 	  (julia "https://github.com/tree-sitter/tree-sitter-julia")
 	  (latex "https://github.com/latex-lsp/tree-sitter-latex")
