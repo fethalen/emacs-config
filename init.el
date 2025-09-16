@@ -223,6 +223,13 @@
         org-startup-indented t
         org-ellipsis " ▾"))
 
+# Query language for Org files
+(use-package org-ql
+  :ensure t
+  :after org
+  :bind (("C-c q s" . org-ql-search)
+         ("C-c q v" . org-ql-view)))
+
 ;; Display the keybindings following an incomplete command in a pop up
 (use-package which-key
   :ensure nil
