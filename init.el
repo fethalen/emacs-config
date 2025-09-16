@@ -347,6 +347,12 @@
   :init
   (autoload 'gfm-mode "markdown-mode" "Major mode for editing GitHub Flavored Markdown" t))
 
+(use-package dired
+  :ensure nil
+  :config
+  ;; Show human-readable sizes
+  (setq dired-listing-switches "-alh"))
+
 ;; Text-based user interface to Git.
 (use-package magit
   :commands (magit-status magit-blame magit-log-all)
