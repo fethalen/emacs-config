@@ -223,7 +223,7 @@
         org-startup-indented t
         org-ellipsis " ▾"))
 
-# Query language for Org files
+;; Query language for Org files
 (use-package org-ql
   :ensure t
   :after org
