@@ -31,6 +31,7 @@
         markdown-mode
         orderless
         org
+        org-ql
         paredit
         python-ts-mode
         pyvenv
@@ -67,12 +68,12 @@
 
 ;;; General
 
-;; On macOS, GUI Emacs does not inherit the shell environment. This
-;; ensures that GUI frames on macOS/X11 gets the same PATH as your
-;; terminal.
+;; On macOS, GUI Emacs does not inherit the shell environment. This ensures that
+;; GUI frames on macOS gets the same PATH as your terminal.
 (use-package exec-path-from-shell
   :demand t
-  :if (memq window-system '(mac ns x))
+  :if (and (eq system-type 'darwin)
+           (memq window-system '(mac ns x)))
   :config
   ;; Use a non-interactive shell (faster)
   (setq exec-path-from-shell-arguments '("-l"))
@@ -85,7 +86,7 @@
   :init
   (show-paren-mode 1)                   ; Highlight matching parens
   (electric-pair-mode 1)                ; Auto-close pairs
-  (defalias 'yes-or-no-p 'y-or-n-p)
+  (fset 'yes-or-no-p 'y-or-n-p)         ; Allow "y/n" instead of "yes/no"
   :hook
   (
    ;; Soft-wrap long lines at word boundaries and move by visual lines
@@ -172,17 +173,11 @@
 
 (use-package prog-mode
   :ensure nil
-  :hook (prog-mode . (lambda ()
-                       (eldoc-mode 1))))
-
-(use-package text-mode
-  :ensure nil)
+  :hook (prog-mode . (lambda () (eldoc-mode 1))))
 
 (use-package minibuffer
   :ensure nil
-  :hook (minibuffer-setup . (lambda ()
-                              (when (bound-and-true-p paredit-mode)
-                                (paredit-mode -1)))))
+  :hook (minibuffer-setup . (lambda () (paredit-mode 0))))
 
 ;; Quickly grow/shrink selection
 (use-package expand-region
@@ -211,7 +206,6 @@
                   "ksh" "es" "rc" "itcsh" "tcsh" "jcsh" "csh" "ksh88"
                   "oash" "pdksh" "mksh" "posix" "wksh" "wsh" "zsh" "rpm"))
     (setf (alist-get lang org-src-lang-modes nil nil #'equal) 'bash-ts)
-    (setf (alist-get "zsh"  org-src-lang-modes nil nil #'equal) 'zsh-ts)
     (setf (alist-get "sh"   org-src-lang-modes nil nil #'equal) 'bash-ts))
 
   ;; Do not ask for confirmation before evaluating code blocks
@@ -353,10 +347,38 @@
   :init
   (autoload 'gfm-mode "markdown-mode" "Major mode for editing GitHub Flavored Markdown" t))
 
+;; Text-based user interface to Git.
+(use-package magit
+  :commands (magit-status magit-blame magit-log-all)
+  :init
+  ;; Don’t auto-revert buffers every time Magit refreshes (use `M-x
+  ;; revert-buffer' if a file changed outside of Emacs)
+  (setq magit-auto-revert-mode nil
+        ;; Don't automatically refresh the status buffer after running a git
+        ;; command
+        magit-refresh-status-buffer nil
+        ;; Don't list any untracked files (use `u' to toggle untracked visibility)
+        magit-status-show-untracked-files nil
+        ;; Faster log rendering
+        magit-log-margin '(t age magit-log-margin-width t 18)
+        ;; Don't show word-granularity differences within diff hunks. Use `=' in
+        ;; a diff-buffer to toggle refinement
+        magit-diff-refine-hunk nil
+        ;; Silently update Magit buffers
+        magit-refresh-verbose nil
+        ;; Don't show the diff by default in the commit buffer. Use `C-c C-d' to
+        ;; display it
+        magit-commit-show-diff nil
+        ;; Don't show git variables in magit branch
+        magit-branch-direct-configure nil
+        ;; Only recognize Git repositories
+        vc-handled-backents '(Git)))
+
+;; Edit files and run commands on remote systems seamlessly.
 (use-package tramp
   :ensure nil
   :config
-  (setq
+  (setq-default
    ;; Don't create lock files on remote systems
    remote-file-name-inhibit-locks t
    ;; Disable auto-saving of remote buffers
@@ -368,9 +390,7 @@
    ;; 3 = info (default), 6 = debug (very noisy).
    tramp-verbose 1
    ;;Default to SSH
-   tramp-default-method "ssh"
-   ;; Tell Magit to use a pseudo-terminal (pty) for TRAMP pipes
-   magit-tramp-pipe-stty-settings 'pty)
+   tramp-default-method "ssh")
 
   ;; Enable TRAMP direct async process mode for faster remote command execution
   (connection-local-set-profile-variables
@@ -383,7 +403,8 @@
    'remote-direct-async-process)
 
   ;; Tell Magit to use a pseudo-terminal (pty) for TRAMP pipes
-  (setq magit-tramp-pipe-stty-settings 'pty)
+  (with-eval-after-load 'magit
+    (setq magit-tramp-pipe-stty-settings 'pty))
 
   ;; Use remote PATH over local one
   (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
