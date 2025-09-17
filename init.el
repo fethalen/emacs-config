@@ -84,9 +84,9 @@
 (use-package emacs
   :ensure nil
   :init
-  (show-paren-mode 1)                   ; Highlight matching parens
-  (electric-pair-mode 1)                ; Auto-close pairs
-  (fset 'yes-or-no-p 'y-or-n-p)         ; Allow "y/n" instead of "yes/no"
+  (show-paren-mode 1)		     ; Highlight matching parens
+  (electric-pair-mode 1)	     ; Auto-close pairs
+  (fset 'yes-or-no-p 'y-or-n-p)	     ; Allow "y/n" instead of "yes/no"
   :hook
   (
    ;; Soft-wrap long lines at word boundaries and move by visual lines
@@ -585,8 +585,7 @@
   (setq-local indent-tabs-mode nil
 	      sh-basic-offset 2
 	      sh-indentation 2
-	      sh-indent-after-continuation nil
-	      sh-indent-comment t))
+	      sh-indent-after-continuation 'always))
 
 ;; Tree-sitter based Bash mode
 (use-package bash-ts-mode
