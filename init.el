@@ -140,13 +140,17 @@
           mac-option-modifier  'meta
           frame-title-format nil)
 
+    ;; Treat all themes as safe
+    (setq custom-safe-themes t)
+
+    ;; Add custom theme to path
+    (add-to-list 'custom-theme-load-path
+		 (expand-file-name "themes/rose-pine-doom-emacs" user-emacs-directory))
+
     ;; Switch theme with system appearance
     (add-hook 'ns-system-appearance-change-functions #'my/apply-theme)))
 
 ;;; Appearance
-
-(add-to-list 'custom-theme-load-path
-             (expand-file-name "themes/rose-pine-doom-emacs" user-emacs-directory))
 
 (use-package doom-themes
   :custom
@@ -581,7 +585,8 @@
   (setq-local indent-tabs-mode nil
 	      sh-basic-offset 2
 	      sh-indentation 2
-	      sh-indent-commen t))
+	      sh-indent-after-continuation nil
+	      sh-indent-comment t))
 
 ;; Tree-sitter based Bash mode
 (use-package bash-ts-mode
