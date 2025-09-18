@@ -582,10 +582,14 @@
 
 (defun my/shell-hook ()
   "Settings applied when editing shell scripts."
-  (setq-local indent-tabs-mode nil
-	      sh-basic-offset 2
-	      sh-indentation 2
-	      sh-indent-after-continuation 'always))
+  (setq-local
+   ;; Use spaces instead of tabs for indentation
+   indent-tabs-mode nil
+   ;; Set indentation offset to 2 spaces
+   sh-basic-offset 2
+   ;; Do not align continued lines under the initial line's arguments;
+   ;; instead, always indent by one indentation offset.
+   sh-indent-after-continuation 'always))
 
 ;; Tree-sitter based Bash mode
 (use-package bash-ts-mode
