@@ -87,14 +87,12 @@
   (show-paren-mode 1)		     ; Highlight matching parens
   (electric-pair-mode 1)	     ; Auto-close pairs
   (fset 'yes-or-no-p 'y-or-n-p)	     ; Allow "y/n" instead of "yes/no"
-  :hook
-  (
-   ;; Soft-wrap long lines at word boundaries and move by visual lines
-   (text-mode . visual-line-mode)
-   ;; Remove trailing whitespace in buffer upon save
-   (before-save . delete-trailing-whitespace)
-   ;; Make script executable if hash-bang is found
-   (after-save . executable-make-buffer-file-executable-if-script-p))
+  :hook (;; Soft-wrap long lines at word boundaries and move by visual lines
+	 (text-mode . visual-line-mode)
+	 ;; Remove trailing whitespace in buffer upon save
+	 (before-save . delete-trailing-whitespace)
+	 ;; Make script executable if hash-bang is found
+	 (after-save . executable-make-buffer-file-executable-if-script-p))
   :config
   (setq
    ;; Cursor & feedback
@@ -589,7 +587,12 @@
    sh-basic-offset 2
    ;; Do not align continued lines under the initial line's arguments;
    ;; instead, always indent by one indentation offset.
-   sh-indent-after-continuation 'always))
+   sh-indent-after-continuation 'always)
+  ;; Make << insert a here document skeleton
+  (sh-electric-here-document-mode 1)
+  ;; Copy keybindings from sh-mode
+  (use-local-map (copy-keymap sh-mode-map))
+  (set-keymap-parent (current-local-map) sh-mode-map))
 
 ;; Tree-sitter based Bash mode
 (use-package bash-ts-mode
@@ -600,9 +603,6 @@
   :hook ((bash-ts-mode . my/shell-hook)
 	 ;; Syntax checking (requires shellcheck)
 	 (bash-ts-mode . flymake-mode))
-  :init
-  ;; Let bash-ts-mode derive features from sh-mode
-  (put 'bash-ts-mode 'derived-mode-parent 'sh-mode)
   :config
   ;; Register LSP server
   (with-eval-after-load 'eglot
@@ -613,7 +613,13 @@
 (use-package shfmt
   :hook (bash-ts-mode . shfmt-on-save-mode)
   :config
-  (setq shfmt-arguments '("-i" "2" "-ci")))
+  (setq
+   shfmt-arguments '(
+                     "--indent" "2"
+                     "--case-indent"
+                     "--binary-next-line"
+                     "--space-redirects"
+                     )))
 
 ;;; Snippets
 
