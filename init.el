@@ -588,7 +588,7 @@
    ;; Do not align continued lines under the initial line's arguments;
    ;; instead, always indent by one indentation offset.
    sh-indent-after-continuation 'always)
-  ;; Make << insert a here document skeleton
+  ;; Make typing `<< SPC' insert a here-document skeleton
   (sh-electric-here-document-mode 1)
   ;; Copy keybindings from sh-mode
   (use-local-map (copy-keymap sh-mode-map))
