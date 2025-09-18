@@ -152,8 +152,8 @@
 
 (use-package doom-themes
   :custom
-  (doom-themes-enable-bold t)
-  (doom-themes-enable-italic t)
+  (doom-themes-enable-bold nil)         ; Disable bold fonts
+  (doom-themes-enable-italic t)         ; Enable italics
   :config
   ;; Enable flashing mode-line on errors
   (doom-themes-visual-bell-config)
@@ -650,7 +650,7 @@
 (defun my/lisp-hook ()
   "Minor modes for various Lisp modes."
   (paredit-mode 1)
-  (rainbow-delimiters-mode ))
+  (rainbow-delimiters-mode))
 
 (dolist (hook '(emacs-lisp-mode-hook
                 eval-expression-minibuffer-setup-hook
