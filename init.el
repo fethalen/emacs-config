@@ -203,25 +203,28 @@
 	;; Don't evaluate code blocks by default on export
 	org-export-use-babel       nil)
 
-  ;; Add languages that can be evaluated with Org Babel
+  ;; Syntax highlighting inside code blocks
+  (setq org-src-fontify-natively t
+	;; Make `TAB' behave as the underlying major mode
+	org-src-tab-acts-natively t
+	;; Align source code with the leftmost column and do not
+	;; indent source code during export or tangling
+	org-src-preserve-indentation t)
+
+  ;; Add languages that can be evaluated with Babel
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
      (shell      . t)
      (python     . t)
-     (r          . t)
+     (R          . t)
      (julia      . t)))
 
   ;; Use the appropriate Tree-sitter mode for shell code blocks
   (dolist (lang '("sh" "bash" "shell" "ash" "jsh" "bash2" "dash" "dtksh"
-                  "ksh" "es" "rc" "itcsh" "tcsh" "jcsh" "csh" "ksh88"
-                  "oash" "pdksh" "mksh" "posix" "wksh" "wsh" "zsh" "rpm"))
-    (setf (alist-get lang org-src-lang-modes nil nil #'equal) 'bash-ts)
-    (setf (alist-get "sh"   org-src-lang-modes nil nil #'equal) 'bash-ts))
-
-  (setq org-src-fontify-natively t
-	org-src-tab-acts-natively t
-	org-edit-src-content-indentation 0)
+                "ksh" "es" "rc" "itcsh" "tcsh" "jcsh" "csh" "ksh88"
+                "oash" "pdksh" "mksh" "posix" "wksh" "wsh" "zsh" "rpm"))
+  (setf (alist-get lang org-src-lang-modes nil nil #'equal) 'bash-ts))
 
   (setq org-directory "~/org"
         org-agenda-files '("~/org/tasks.org" "~/org/projects.org")
