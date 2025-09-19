@@ -198,10 +198,19 @@
     (let ((inhibit-read-only t))
       (ansi-color-apply-on-region (point-min) (point-max))))
 
-  ;; Enable execution of shell scripts in Org Babel code blocks
+  ;; Don't ask for confirmation before evaluating code blocks
+  (setq org-confirm-babel-evaluate nil
+	;; Don't evaluate code blocks by default on export
+	org-export-use-babel       nil)
+
+  ;; Add languages that can be evaluated with Org Babel
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((shell . t)))
+   '((emacs-lisp . t)
+     (shell      . t)
+     (python     . t)
+     (r          . t)
+     (julia      . t)))
 
   ;; Use the appropriate Tree-sitter mode for shell code blocks
   (dolist (lang '("sh" "bash" "shell" "ash" "jsh" "bash2" "dash" "dtksh"
@@ -210,8 +219,9 @@
     (setf (alist-get lang org-src-lang-modes nil nil #'equal) 'bash-ts)
     (setf (alist-get "sh"   org-src-lang-modes nil nil #'equal) 'bash-ts))
 
-  ;; Do not ask for confirmation before evaluating code blocks
-  (setq org-confirm-babel-evaluate nil)
+  (setq org-src-fontify-natively t
+	org-src-tab-acts-natively t
+	org-edit-src-content-indentation 0)
 
   (setq org-directory "~/org"
         org-agenda-files '("~/org/tasks.org" "~/org/projects.org")
