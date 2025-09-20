@@ -23,6 +23,7 @@
         embark-consult
         exec-path-from-shell
         expand-region
+        flycheck-clj-kondo
         geiser
         julia-snail
         julia-ts-mode
@@ -660,8 +661,10 @@
 
 ;;; Lisp
 
+;; paredit: Structured editing of parentheses
 (use-package paredit)
 
+;; rainbow-delimiters: Highlight delimiters according to their depth
 (use-package rainbow-delimiters)
 
 (defun my/lisp-hook ()
@@ -677,32 +680,48 @@
                 scheme-mode-hook))
   (add-hook hook #'my/lisp-hook))
 
-;; Geiser (Scheme)
+;;;; Scheme
+
+;; Geiser: Generic interaction mode for Scheme
 (use-package geiser
   :config
   (setq geiser-active-implementations '(mit)
         geiser-mit-binary "/usr/local/bin/mit-scheme")
   (add-hook 'geiser-repl-mode-hook #'rainbow-delimiters-mode))
 
-;; Slime
+;; SLIME: A Common Lisp development environment for Emacs
 (use-package slime
   :init
   (setq inferior-lisp-program "/usr/local/bin/sbcl")
   :config
   (slime-setup '(slime-fancy slime-repl)))
 
-;; Clojure
-(use-package cider
-  :init (add-hook 'cider-mode-hook #'clj-refactor-mode)
-  :diminish subword-mode
+;;;; Clojure
+
+;; clojure-mode: Syntax highlighting, indentation, navigation and refactoring
+;; support for Clojure
+(use-package clojure-mode
+  :mode "\\.clj\\'"
   :config
+  (setq clojure-indent-style 'align-arguments))
+
+;; CIDER: Interactive programming in Clojure
+(use-package cider
+  :after clojure-mode
+  :init
   (setq nrepl-log-messages t
-        cider-repl-display-in-current-window t
-        cider-repl-use-clojure-font-lock t
-        cider-prompt-save-file-on-load 'always-save
-        cider-font-lock-dynamically '(macro core function var)
-        nrepl-hide-special-buffers t
-        cider-overlays-use-font-lock t)
-  (cider-repl-toggle-pretty-printing))
+        cider-repl-pop-to-buffer-on-connect t
+        cider-show-error-buffer 'only-in-repl
+        cider-auto-select-error-buffer t
+        cider-repl-display-help-banner nil
+        cider-repl-result-prefix ";; => ")
+  :config
+  ;; Enable eldoc in REPL & source buffers
+  (add-hook 'cider-mode-hook #'eldoc-mode)
+  (add-hook 'cider-repl-mode-hook #'eldoc-mode))
+
+;; clj-kondo: Static analyzer and linter for Clojure
+(use-package flycheck-clj-kondo
+  :after (clojure-mode flycheck))
 
 ;;; init.el ends here
