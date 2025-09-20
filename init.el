@@ -285,13 +285,17 @@
 (use-package consult
   :after orderless
   :init
-  :bind (("M-x"         . execute-extended-command) ;; old M-x feel
-         ("M-X"         . consult-mode-command)     ;; major-mode commands
-         ("C-c C-c M-x" . execute-extended-command) ;; smex fallback
-         ("C-x b"       . consult-buffer)
-         ("C-s"         . consult-line)
-         ("C-x p b"     . consult-project-buffer)
-         ("C-x p f"     . project-find-file)))
+  :bind (("C-s"     . consult-line)
+	 ("C-M-s"   . consult-ripgrep)
+	 ("C-x b"   . consult-buffer)
+	 ("C-x p b" . consult-project-buffer)
+	 ("C-x p f" . project-find-file)
+	 ("M-g g"   . consult-goto-line)
+	 ("M-g M-g" . consult-goto-line)
+	 ("M-x"     . execute-extended-command)
+	 ("M-X"     . consult-mode-command)
+	 ("M-g t"   . consult-imenu)
+         ("M-g a"   . consult-imenu-multi)))
 
 ;; Context actions
 (use-package embark
