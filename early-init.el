@@ -33,7 +33,7 @@
 (tool-bar-mode -1)                      ; No toolbar
 (menu-bar-mode -1)                      ; No menubar
 (scroll-bar-mode -1)                    ; No scrollbar
-(blink-cursor-mode -1)                  ; Solid cursor
+(blink-cursor-mode -1)                  ; Solid cursor, no blinking
 
 ;; Frame defaults
 (add-to-list 'default-frame-alist '(width . 120))

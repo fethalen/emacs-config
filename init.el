@@ -87,7 +87,7 @@
   :init
   (show-paren-mode 1)		     ; Highlight matching parens
   (electric-pair-mode 1)	     ; Auto-close pairs
-  (fset 'yes-or-no-p 'y-or-n-p)	     ; Allow "y/n" instead of "yes/no"
+  (setq use-short-answers t)	     ; Allow "y/n" instead of "yes/no"
   :hook (;; Soft-wrap long lines at word boundaries and move by visual lines
 	 (text-mode . visual-line-mode)
 	 ;; Remove trailing whitespace in buffer upon save
