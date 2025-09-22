@@ -87,7 +87,6 @@
   :init
   (show-paren-mode 1)		     ; Highlight matching parens
   (electric-pair-mode 1)	     ; Auto-close pairs
-  (setq use-short-answers t)	     ; Allow "y/n" instead of "yes/no"
   :hook (;; Soft-wrap long lines at word boundaries and move by visual lines
 	 (text-mode . visual-line-mode)
 	 ;; Remove trailing whitespace in buffer upon save
@@ -96,22 +95,40 @@
 	 (after-save . executable-make-buffer-file-executable-if-script-p))
   :config
   (setq
-   ;; Cursor & feedback
-   visible-bell t
-   column-number-mode t
-   echo-keystrokes 0
+   visible-bell t              ;; Flash screen to represent a bell
+   column-number-mode t        ;; Show current column number in the mode line
+   echo-keystrokes 0	       ;; Echo incomplete commands after 0 seconds
 
-   ;; Startup
-   inhibit-startup-screen t
-   initial-scratch-message ""
-   initial-buffer-choice t
+   inhibit-startup-screen t    ;; Hide startup screen
+   initial-scratch-message ""  ;; Hide message in scratch buffer
+   initial-buffer-choice t     ;; Open`*scratch*' buffer on startup
 
-   ;; Increase process output buffer
-   read-process-output-max (* 1024 1024)
+   indent-tabs-mode nil        ;; Use spaces over tabs
 
-   ;; Indentation
-   indent-tabs-mode nil
-   fill-column 80)
+   read-process-output-max (* 1024 1024)   ;; Increase process output buffer
+   use-short-answers t                     ;; y/n instead of yes/no
+   confirm-nonexistent-file-or-buffer nil  ;; Don't confirm non-existing files
+   )
+
+  ;; Reopen files at last cursor position
+  (save-place-mode 1)
+
+  ;; Track recently opened files
+  (recentf-mode 1)
+
+  ;; Replace selected text on typing
+  (delete-selection-mode 1)
+
+  ;; Auto-reload files when changed on disk
+  (global-auto-revert-mode 1)
+
+  ;; Don't notify me about reloaded files
+  (setq auto-revert-use-notify nil
+	;; Poll files every 10 seconds
+	auto-revert-interval 10
+	;; Do not auto-reload non-file buffers (e.g., Dired)
+	global-auto-revert-non-file-buffers
+   )
 
   ;; Ensure backup and auto-save directories exist
   (dolist (dir '("backups" "auto-save"))
