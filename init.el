@@ -127,7 +127,7 @@
 	;; Poll files every 10 seconds
 	auto-revert-interval 10
 	;; Do not auto-reload non-file buffers (e.g., Dired)
-	global-auto-revert-non-file-buffers
+	global-auto-revert-non-file-buffers nil
    )
 
   ;; Ensure backup and auto-save directories exist
