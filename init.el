@@ -21,6 +21,7 @@
         eglot
         embark
         embark-consult
+	ess
         exec-path-from-shell
         expand-region
         flycheck-clj-kondo
@@ -578,6 +579,15 @@
   (require 'dap-python)
   (setq dap-python-debugger 'debugpy)
   (setq dap-python-executable "python"))
+
+;;; R
+
+;; Package for programming in statistical languages
+(use-package ess
+  :ensure t
+  :init
+  ;; Make sure .R files use ESS
+  (add-to-list 'auto-mode-alist '("\\.R\\'" . ess-r-mode)))
 
 ;;; Julia
 
