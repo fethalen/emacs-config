@@ -16,6 +16,7 @@
         consult
         corfu
         dap-mode
+        dired-rsync
         doom-themes
         eat
         eglot
@@ -237,13 +238,20 @@
      (shell      . t)
      (python     . t)
      (R          . t)
-     (julia      . t)))
+     (julia      . t)
+     (plantuml   . t)))
+
+  (setq org-plantuml-exec-mode 'plantuml)
+
+  (setq org-latex-listings 'nil)
+
+  (setq org-latex-src-block-backend 'verbatim)
 
   ;; Use the appropriate Tree-sitter mode for shell code blocks
   (dolist (lang '("sh" "bash" "shell" "ash" "jsh" "bash2" "dash" "dtksh"
-                "ksh" "es" "rc" "itcsh" "tcsh" "jcsh" "csh" "ksh88"
-                "oash" "pdksh" "mksh" "posix" "wksh" "wsh" "zsh" "rpm"))
-  (setf (alist-get lang org-src-lang-modes nil nil #'equal) 'bash-ts))
+                  "ksh" "es" "rc" "itcsh" "tcsh" "jcsh" "csh" "ksh88"
+                  "oash" "pdksh" "mksh" "posix" "wksh" "wsh" "zsh" "rpm"))
+    (setf (alist-get lang org-src-lang-modes nil nil #'equal) 'bash-ts))
 
   (setq org-directory "~/org"
         org-agenda-files '("~/org/tasks.org" "~/org/projects.org")
@@ -391,67 +399,71 @@
   ;; Show human-readable sizes
   (setq dired-listing-switches "-alh"))
 
-;; Text-based user interface to Git.
-(use-package magit
-  :commands (magit-status magit-blame magit-log-all)
-  :init
-  ;; Don’t auto-revert buffers every time Magit refreshes (use `M-x
-  ;; revert-buffer' if a file changed outside of Emacs)
-  (setq magit-auto-revert-mode nil
-        ;; Don't automatically refresh the status buffer after running a git
-        ;; command
-        magit-refresh-status-buffer nil
-        ;; Don't list any untracked files (use `u' to toggle untracked visibility)
-        magit-status-show-untracked-files nil
-        ;; Faster log rendering
-        magit-log-margin '(t age magit-log-margin-width t 18)
-        ;; Don't show word-granularity differences within diff hunks. Use `=' in
-        ;; a diff-buffer to toggle refinement
-        magit-diff-refine-hunk nil
-        ;; Silently update Magit buffers
-        magit-refresh-verbose nil
-        ;; Don't show the diff by default in the commit buffer. Use `C-c C-d' to
-        ;; display it
-        magit-commit-show-diff nil
-        ;; Don't show git variables in magit branch
-        magit-branch-direct-configure nil
-        ;; Only recognize Git repositories
-        vc-handled-backents '(Git)))
+;; ;; Text-based user interface to Git.
+;; (use-package magit
+;;   :commands (magit-status magit-blame magit-log-all)
+;;   :init
+;;   ;; Don’t auto-revert buffers every time Magit refreshes (use `M-x
+;;   ;; revert-buffer' if a file changed outside of Emacs)
+;;   (setq magit-auto-revert-mode nil
+;;         ;; Don't automatically refresh the status buffer after running a git
+;;         ;; command
+;;         magit-refresh-status-buffer nil
+;;         ;; Don't list any untracked files (use `u' to toggle untracked visibility)
+;;         magit-status-show-untracked-files nil
+;;         ;; Faster log rendering
+;;         magit-log-margin '(t age magit-log-margin-width t 18)
+;;         ;; Don't show word-granularity differences within diff hunks. Use `=' in
+;;         ;; a diff-buffer to toggle refinement
+;;         magit-diff-refine-hunk nil
+;;         ;; Silently update Magit buffers
+;;         magit-refresh-verbose nil
+;;         ;; Don't show the diff by default in the commit buffer. Use `C-c C-d' to
+;;         ;; display it
+;;         magit-commit-show-diff nil
+;;         ;; Don't show git variables in magit branch
+;;         magit-branch-direct-configure nil
+;;         ;; Only recognize Git repositories
+;;         vc-handled-backents '(Git)))
 
-;; Edit files and run commands on remote systems seamlessly.
-(use-package tramp
-  :ensure nil
-  :config
-  (setq-default
-   ;; Don't create lock files on remote systems
-   remote-file-name-inhibit-locks t
-   ;; Disable auto-saving of remote buffers
-   remote-file-name-inhibit-auto-save-visited t
-   ;; Use an external tool to move files exceeding the file size limit
-   tramp-copy-size-limit (* 1024 1024) ;; 1MB
-   ;; Verbosity level for TRAMP messages:
-   ;; 0 = silent, 1 = errors only, 2 = warnings,
-   ;; 3 = info (default), 6 = debug (very noisy).
-   tramp-verbose 1
-   ;;Default to SSH
-   tramp-default-method "ssh")
+;; ;; Edit files and run commands on remote systems seamlessly.
+;; (use-package tramp
+;;   :ensure nil
+;;   :config
+;;   (setq-default
+;;    ;; Don't create lock files on remote systems
+;;    remote-file-name-inhibit-locks t
+;;    ;; Disable auto-saving of remote buffers
+;;    remote-file-name-inhibit-auto-save-visited t
+;;    ;; Use an external tool to move files exceeding the file size limit
+;;    tramp-copy-size-limit (* 1024 1024) ;; 1MB
+;;    ;; Verbosity level for TRAMP messages:
+;;    ;; 0 = silent, 1 = errors only, 2 = warnings,
+;;    ;; 3 = info (default), 6 = debug (very noisy).
+;;    tramp-verbose 3
+;;    ;; Use scp for file transfers
+;;    tramp-default-method "scp")
 
-  ;; Enable TRAMP direct async process mode for faster remote command execution
-  (connection-local-set-profile-variables
-   'remote-direct-async-process
-   '((tramp-direct-async-process . t)))
+;;   ;; Enable TRAMP direct async process mode for faster remote command execution
+;;   (connection-local-set-profile-variables
+;;    'remote-direct-async-process
+;;    '((tramp-direct-async-process . t)))
 
-  ;; Apply the above profile to all TRAMP connections using the "scp" protocol
-  (connection-local-set-profiles
-   '(:application tramp :protocol "scp")
-   'remote-direct-async-process)
+;;   ;; Apply the above profile to all TRAMP connections using the "scp" protocol
+;;   (connection-local-set-profiles
+;;    '(:application tramp :protocol "scp")
+;;    'remote-direct-async-process)
 
-  ;; Tell Magit to use a pseudo-terminal (pty) for TRAMP pipes
-  (with-eval-after-load 'magit
-    (setq magit-tramp-pipe-stty-settings 'pty))
+;;   ;; Tell Magit to use a pseudo-terminal (pty) for TRAMP pipes
+;;   (with-eval-after-load 'magit
+;;     (setq magit-tramp-pipe-stty-settings 'pty))
 
-  ;; Use remote PATH over local one
-  (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
+;;   ;; Use remote PATH over local one
+;;   (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
+
+;; (use-package dired-rsync
+;;   :bind (:map dired-mode-map
+;;               ("C-c C-r" . dired-rsync)))
 
 ;; Terminal emulation
 (defun my/terminal-hook ()
@@ -719,7 +731,7 @@
 ;; SLIME: A Common Lisp development environment for Emacs
 (use-package slime
   :init
-  (setq inferior-lisp-program "/usr/local/bin/sbcl")
+  (setq inferior-lisp-program "sbcl")
   :config
   (slime-setup '(slime-fancy slime-repl)))
 
